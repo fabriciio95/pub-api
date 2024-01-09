@@ -1,10 +1,10 @@
 CREATE TABLE perda_avaria (
     id BIGSERIAL PRIMARY KEY,
-    motivo VARCHAR(255),
-    quantidade INTEGER,
-    data TIMESTAMP WITH TIME ZONE,
-    unidade_id BIGINT,
-    produto_id BIGINT,
+    motivo VARCHAR(255) NOT NULL,
+    quantidade INTEGER NOT NULL,
+    data TIMESTAMP WITH TIME ZONE NOT NULL,
+    unidade_id BIGINT NOT NULL,
+    produto_id BIGINT NOT NULL,
 
     FOREIGN KEY (unidade_id) REFERENCES unidade(id),
     FOREIGN KEY (produto_id) REFERENCES produto(id)

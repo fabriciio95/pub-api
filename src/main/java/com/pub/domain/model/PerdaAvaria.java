@@ -28,11 +28,11 @@ public class PerdaAvaria {
 	private OffsetDateTime data;
 	
 	@ManyToOne
-	@JoinColumn(name = "unidade_id")
+	@JoinColumn(name = "unidade_id", nullable = false)
 	private Unidade unidade;
 	
 	@ManyToOne
-	@JoinColumn(name = "produto_id")
+	@JoinColumn(name = "produto_id", nullable = false)
 	private Produto produto;
 
 	@Override

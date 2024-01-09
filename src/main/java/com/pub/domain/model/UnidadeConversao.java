@@ -21,7 +21,7 @@ public class UnidadeConversao {
 	private Long id;
 	
 	@ManyToOne
-	@JoinColumn(name = "unidade_origem")
+	@JoinColumn(name = "unidade_origem", nullable = false)
 	private Unidade unidadeOrigem;
 	
 	@ManyToOne

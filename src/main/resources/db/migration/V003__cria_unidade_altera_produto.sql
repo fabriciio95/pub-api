@@ -5,9 +5,9 @@ CREATE TABLE unidade (
 
 CREATE TABLE unidade_conversao (
     id BIGSERIAL PRIMARY KEY,
-    unidade_origem BIGINT,
-    unidade_destino BIGINT,
-    fator_conversao DOUBLE PRECISION,
+    unidade_origem BIGINT NOT NULL,
+    unidade_destino BIGINT NOT NULL,
+    fator_conversao DOUBLE PRECISION NOT NULL,
     
     FOREIGN KEY (unidade_origem) REFERENCES unidade(id),
     FOREIGN KEY (unidade_destino) REFERENCES unidade(id)

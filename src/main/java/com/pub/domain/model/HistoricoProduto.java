@@ -15,11 +15,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
+@Builder
 @Getter
-@Setter
 @Entity
 public class HistoricoProduto {
 
@@ -37,15 +37,15 @@ public class HistoricoProduto {
 	private TipoTransacao tipoTransacao;
 	
 	@ManyToOne
-	@JoinColumn(name = "produto_id")
+	@JoinColumn(name = "produto_id", nullable = false)
 	private Produto produto;
 	
 	@ManyToOne
-	@JoinColumn(name = "unidade_id")
+	@JoinColumn(name = "unidade_id", nullable = false)
 	private Unidade unidade;
 	
 	@OneToOne(optional = true)
-	@JoinColumn(name = "perda_avaria_id")
+	@JoinColumn(name = "perda_avaria_id", nullable = true)
 	private PerdaAvaria perdaAvaria;
 
 	@Override

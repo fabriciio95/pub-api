@@ -1,8 +1,8 @@
 CREATE TABLE historico_preco_produto (
     id BIGSERIAL PRIMARY KEY,
-    data TIMESTAMP WITH TIME ZONE,
-    preco NUMERIC,
-    produto_id BIGINT,
+    data TIMESTAMP WITH TIME ZONE NOT NULL,
+    preco NUMERIC NOT NULL,
+    produto_id BIGINT NOT NULL,
 
     FOREIGN KEY (produto_id) REFERENCES produto(id)
 );

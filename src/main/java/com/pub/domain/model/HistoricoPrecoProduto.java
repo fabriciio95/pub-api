@@ -10,11 +10,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
+@Builder
 @Getter
-@Setter
 @Entity
 public class HistoricoPrecoProduto {
 
@@ -27,7 +27,7 @@ public class HistoricoPrecoProduto {
 	private BigDecimal preco;
 	
 	@ManyToOne
-	@JoinColumn(name = "produto_id")
+	@JoinColumn(name = "produto_id", nullable = false)
 	private Produto produto;
 
 	@Override

@@ -1,7 +1,11 @@
 package com.pub.domain.model;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.Objects;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -27,8 +31,14 @@ public class Produto {
 	
 	private Integer quantidade;
 	
+	@CreationTimestamp
+	private OffsetDateTime dataCadastro;
+	
+	@UpdateTimestamp
+	private OffsetDateTime dataAtualizacao;
+	
 	@ManyToOne
-	@JoinColumn(name = "categoria_id")
+	@JoinColumn(name = "categoria_id", nullable = false)
 	private Categoria categoria;
 	
 	@ManyToOne
