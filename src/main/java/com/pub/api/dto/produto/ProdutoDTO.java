@@ -1,6 +1,7 @@
 package com.pub.api.dto.produto;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 
 import com.pub.api.dto.categoria.CategoriaIdDTO;
 import com.pub.api.dto.unidade.UnidadeIdDTO;
@@ -19,6 +20,10 @@ public class ProdutoDTO {
 	private BigDecimal preco;
 	
 	private Integer quantidade;
+	
+	private boolean ativo;
+	
+	private OffsetDateTime dataCadastro;
 	
 	private CategoriaIdDTO categoria;
 	

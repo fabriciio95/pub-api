@@ -37,6 +37,8 @@ public class Produto {
 	@UpdateTimestamp
 	private OffsetDateTime dataAtualizacao;
 	
+	private boolean ativo;
+	
 	@ManyToOne
 	@JoinColumn(name = "categoria_id", nullable = false)
 	private Categoria categoria;

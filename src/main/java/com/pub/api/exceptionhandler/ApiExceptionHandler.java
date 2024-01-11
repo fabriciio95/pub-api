@@ -24,7 +24,9 @@ import com.fasterxml.jackson.databind.JsonMappingException.Reference;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.PropertyBindingException;
 import com.pub.api.exceptionhandler.Problema.Objeto;
+import com.pub.domain.exception.EntidadeNaoEncontradaException;
 import com.pub.domain.exception.ObjetoJaCadastradoException;
+import com.pub.domain.exception.ViolacaoRegraNegocioException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -81,6 +83,29 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 		return handleExceptionInternal(excecao, problema, new HttpHeaders(), httpStatus, request);
 	}
 	
+	@ExceptionHandler(EntidadeNaoEncontradaException.class)
+	public ResponseEntity<Object> handleEntidadeNaoEncontrada(EntidadeNaoEncontradaException ex, WebRequest request) {
+		
+		HttpStatus httpStatus = HttpStatus.NOT_FOUND;
+		
+		Problema problema = criarProblemaBuilder(httpStatus, TipoProblema.RECURSO_NAO_ENCONTRADO, ex.getMessage())
+				.mensagemUsuario(ex.getMessage())
+				.build();
+		
+		return handleExceptionInternal(ex, problema, new HttpHeaders(), httpStatus, request);
+	}
+	
+	@ExceptionHandler({ ViolacaoRegraNegocioException.class})
+	public ResponseEntity<Object> handleViolacaoRegraNegocio(ViolacaoRegraNegocioException ex, WebRequest request) {
+		
+		HttpStatus httpStatus = HttpStatus.UNPROCESSABLE_ENTITY;
+		
+		Problema problema = criarProblemaBuilder(httpStatus, TipoProblema.VIOLACAO_REGRA_NEGOCIO, ex.getMessage())
+				.mensagemUsuario(ex.getMessage())
+				.build();
+		
+		return handleExceptionInternal(ex, problema, new HttpHeaders(), httpStatus, request);
+	}
 	
 	@Override
 	protected ResponseEntity<Object> handleExceptionInternal(Exception ex, Object body, HttpHeaders headers,

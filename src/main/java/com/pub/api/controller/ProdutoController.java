@@ -1,7 +1,10 @@
 package com.pub.api.controller;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -33,6 +36,25 @@ public class ProdutoController {
 	public ProdutoDTO cadastrarProduto(@RequestBody @Valid ProdutoInputDTO produtoInputDTO) {
 		Produto produto = produtoDisassembler.toEntidade(produtoInputDTO);
 		
-		return produtoAssembler.toDTO(produtoService.salvarProduto(produto));
+		return produtoAssembler.toDTO(produtoService.cadastrarProduto(produto));
+	}
+	
+	@PutMapping("/{produtoId}")
+	public ProdutoDTO atualizarProduto(@RequestBody @Valid ProdutoInputDTO produtoInputDTO, @PathVariable Long produtoId) {
+		Produto produto = produtoDisassembler.toEntidade(produtoInputDTO);
+		
+		return produtoAssembler.toDTO(produtoService.atualizarProduto(produto, produtoId));
+	}
+	
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@PutMapping("/{produtoId}/ativo")
+	public void ativarProduto(@PathVariable Long produtoId) {
+		produtoService.alterarStatusAtivacaoProduto(produtoId, true);
+	}
+	
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@DeleteMapping("/{produtoId}/ativo")
+	public void inativar(@PathVariable Long produtoId) {
+		produtoService.alterarStatusAtivacaoProduto(produtoId, false);
 	}
 }

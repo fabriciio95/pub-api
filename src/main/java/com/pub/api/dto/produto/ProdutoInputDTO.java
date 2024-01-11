@@ -25,7 +25,7 @@ public class ProdutoInputDTO {
 	private BigDecimal preco;
 	
 	@Min(0)
-	private Integer quantidade;
+	private Integer quantidade = 0;
 		
 	@Valid
 	@NotNull
