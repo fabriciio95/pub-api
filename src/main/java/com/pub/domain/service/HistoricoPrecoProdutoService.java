@@ -2,6 +2,8 @@ package com.pub.domain.service;
 
 import java.time.OffsetDateTime;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,5 +28,9 @@ public class HistoricoPrecoProdutoService {
 				                                                           .build();
 		
 		return historicoPrecoProdutoRepository.save(historicoPrecoProduto);
+	}
+	
+	public Page<HistoricoPrecoProduto> listarHistoricoPrecoProduto(Long produtoId, Pageable pageable) {
+		return historicoPrecoProdutoRepository.findById(produtoId, pageable);
 	}
 }

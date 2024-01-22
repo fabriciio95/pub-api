@@ -22,7 +22,7 @@ public class Unidade {
 	
 	private String descricao;
 	
-	@OneToMany(mappedBy = "unidadeOrigem")
+	@OneToMany(mappedBy = "unidadeDestino")
 	private List<UnidadeConversao> unidadesConversao;
 
 	@Override

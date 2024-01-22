@@ -10,10 +10,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.pub.api.dto.produto.AlteracaoEstoqueDTO;
 import com.pub.api.dto.produto.ProdutoDTO;
+import com.pub.api.dto.produto.ProdutoIdDTO;
 import com.pub.api.dto.produto.ProdutoInputDTO;
 import com.pub.api.mapper.assembler.ProdutoAssembler;
 import com.pub.api.mapper.disassembler.ProdutoDisassembler;
+import com.pub.api.mapper.disassembler.TransacaoEstoqueDisassembler;
 import com.pub.domain.model.Produto;
 import com.pub.domain.service.ProdutoService;
 
@@ -30,6 +33,8 @@ public class ProdutoController {
 	private final ProdutoDisassembler produtoDisassembler;
 	
 	private final ProdutoAssembler produtoAssembler;
+	
+	private final TransacaoEstoqueDisassembler transacaoEstoqueDisassembler;
 	
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping
@@ -57,4 +62,13 @@ public class ProdutoController {
 	public void inativar(@PathVariable Long produtoId) {
 		produtoService.alterarStatusAtivacaoProduto(produtoId, false);
 	}
+	
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@PutMapping("/{produtoId}/alteracao-estoque")
+	public void registrarAlteracaoEstoque(@PathVariable Long produtoId, @RequestBody AlteracaoEstoqueDTO alteracaoEstoqueDTO) {
+		alteracaoEstoqueDTO.setProduto(new ProdutoIdDTO(produtoId));
+		
+		produtoService.registrarAlteracaoEstoque(transacaoEstoqueDisassembler.toTransacaoEstoqueDTO(alteracaoEstoqueDTO));
+	}
+	
 }

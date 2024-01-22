@@ -28,7 +28,7 @@ public class UnidadeConversao {
     @JoinColumn(name = "unidade_destino")
 	private Unidade unidadeDestino;
 	
-	private Double fatorConversao;
+	private Integer fatorConversao;
 
 	@Override
 	public int hashCode() {
