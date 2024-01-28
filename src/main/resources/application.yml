@@ -9,3 +9,10 @@ spring:
       fail-on-ignored-properties: true
   jpa:
     show-sql: true
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: false
+  main:
+    allow-circular-references: true
+

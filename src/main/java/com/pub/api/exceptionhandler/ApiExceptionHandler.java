@@ -23,6 +23,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import com.fasterxml.jackson.databind.JsonMappingException.Reference;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.PropertyBindingException;
+import com.pub.api.exception.RequisicaoInvalidaException;
 import com.pub.api.exceptionhandler.Problema.Objeto;
 import com.pub.domain.exception.EntidadeNaoEncontradaException;
 import com.pub.domain.exception.ObjetoJaCadastradoException;
@@ -105,6 +106,18 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 				.build();
 		
 		return handleExceptionInternal(ex, problema, new HttpHeaders(), httpStatus, request);
+	}
+	
+	@ExceptionHandler(RequisicaoInvalidaException.class) 
+	public ResponseEntity<Object> handleRequisicaoInvalida(RequisicaoInvalidaException ex, WebRequest request) {
+		
+		HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
+		
+		Problema problema = criarProblemaBuilder(httpStatus, TipoProblema.DADOS_INVALIDOS, ex.getMessage())
+				.mensagemUsuario(ex.getMessage())
+				.build();
+		
+		return handleExceptionInternal(ex, problema,  new HttpHeaders(), httpStatus, request);
 	}
 	
 	@Override

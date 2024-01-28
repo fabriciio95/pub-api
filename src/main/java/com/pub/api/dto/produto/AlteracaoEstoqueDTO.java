@@ -1,6 +1,6 @@
 package com.pub.api.dto.produto;
 
-import com.pub.api.dto.perdaavaria.PerdaAvariaDTO;
+import com.pub.api.dto.perdaavaria.PerdaAvariaInputDTO;
 import com.pub.api.dto.unidadeConversao.UnidadeConversaoIdDTO;
 
 import lombok.Getter;
@@ -18,5 +18,5 @@ public class AlteracaoEstoqueDTO {
 	
 	private UnidadeConversaoIdDTO unidadeConversao;
 	
-	private PerdaAvariaDTO perdaAvaria;
+	private PerdaAvariaInputDTO perdaAvaria;
 }

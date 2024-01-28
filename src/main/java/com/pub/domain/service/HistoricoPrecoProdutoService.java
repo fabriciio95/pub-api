@@ -1,9 +1,13 @@
 package com.pub.domain.service;
 
+import static com.pub.infrastructure.repository.spec.HistoricoPrecoProdutoSpecs.*;
+
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +34,16 @@ public class HistoricoPrecoProdutoService {
 		return historicoPrecoProdutoRepository.save(historicoPrecoProduto);
 	}
 	
-	public Page<HistoricoPrecoProduto> listarHistoricoPrecoProduto(Long produtoId, Pageable pageable) {
-		return historicoPrecoProdutoRepository.findById(produtoId, pageable);
+	public Page<HistoricoPrecoProduto> listarHistoricoPrecoProduto(Produto produto, LocalDate dataInicio, LocalDate dataFim, Pageable pageable) {
+		
+		Specification<HistoricoPrecoProduto> spec = comProdutoIdIgualA(produto.getId());
+		
+		if(dataInicio != null)
+			spec = spec.and(comDataMaiorOuIgualA(dataInicio));
+		
+		if(dataFim != null)
+			spec = spec.and(comDataMenorOuIgualA(dataFim));
+		
+		return historicoPrecoProdutoRepository.findAll(spec, pageable);
 	}
 }

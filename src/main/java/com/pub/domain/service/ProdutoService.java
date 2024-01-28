@@ -1,5 +1,7 @@
 package com.pub.domain.service;
 
+import static com.pub.infrastructure.repository.spec.ProdutoSpecs.*;
+
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.Optional;
@@ -7,6 +9,7 @@ import java.util.Optional;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -184,8 +187,26 @@ public class ProdutoService {
 		historicoProdutoService.salvarHistoricoProduto(produto, tipoTransacao, perdaAvaria, quantidadeTransacao);
 	}
 	
-	public Page<Produto> listarProdutos(Pageable pageable) {
-		return this.produtoRepository.findAll(pageable);
+	public Page<Produto> pesquisarProdutos(Long produtoId, String nome, Boolean ativo, Long categoriaId, Long unidadeId, Pageable pageable) {
+		
+		Specification<Produto> spec = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
+		
+		if(produtoId != null) 
+			spec = spec.and(comProdutoIdIgualA(produtoId));
+		
+		if(nome != null)
+			spec = spec.and(comNomeParecido(nome));
+		
+		if(categoriaId != null)
+			spec = spec.and(comCategoriaIdIgualA(categoriaId));
+		
+		if(unidadeId != null)
+			spec = spec.and(comUnidadeIdIgualA(unidadeId));
+		
+		if(ativo != null)
+			spec = spec.and(comAtivoIgualA(ativo));
+		
+		return this.produtoRepository.findAll(spec, pageable);
 	}
 
 	private boolean isTransacaoPerdaAvariaInvalida(TransacaoEstoqueDTO transacaoEstoqueDTO, TipoTransacao tipoTransacao) {

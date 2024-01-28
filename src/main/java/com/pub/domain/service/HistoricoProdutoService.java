@@ -1,5 +1,6 @@
 package com.pub.domain.service;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 import org.springframework.data.domain.Page;
@@ -35,8 +36,8 @@ public class HistoricoProdutoService {
 		return historicoProdutoRepository.save(historicoProduto);
 	}
 	
-	public Page<HistoricoProduto> listarHistoricoProduto(Long produtoId, Pageable pageable) {
-		return historicoProdutoRepository.findById(produtoId, pageable);
+	public Page<HistoricoProduto> listarHistoricoProduto(Produto produto, Pageable pageable, LocalDate dataInicio, LocalDate dataFim, TipoTransacao tipoTransacao) {
+		return historicoProdutoRepository.findHistoricoProduto(produto.getId(), dataInicio, dataFim, tipoTransacao, pageable);
 	}
 
 	private HistoricoProduto criarHistoricoProduto(Produto produto, TipoTransacao tipoTransacao, PerdaAvaria perdaAvaria) {

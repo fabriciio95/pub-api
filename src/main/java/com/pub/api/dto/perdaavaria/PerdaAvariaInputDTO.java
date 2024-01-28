@@ -5,9 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class PerdaAvariaDTO {
+public class PerdaAvariaInputDTO {
 
-	private Long id;
-	
 	private String motivo;
 }

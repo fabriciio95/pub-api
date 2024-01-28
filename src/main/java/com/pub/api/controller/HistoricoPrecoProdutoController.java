@@ -13,45 +13,45 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.pub.api.dto.historico.HistoricoProdutoDTO;
+import com.pub.api.dto.historico.HistoricoPrecoProdutoDTO;
 import com.pub.api.exception.RequisicaoInvalidaException;
-import com.pub.api.mapper.assembler.HistoricoProdutoAssembler;
+import com.pub.api.mapper.assembler.HistoricoPrecoProdutoAssembler;
 import com.pub.api.mapper.assembler.PaginaAssembler;
-import com.pub.domain.model.HistoricoProduto;
+import com.pub.domain.model.HistoricoPrecoProduto;
 import com.pub.domain.model.Produto;
-import com.pub.domain.model.enums.TipoTransacao;
-import com.pub.domain.service.HistoricoProdutoService;
+import com.pub.domain.service.HistoricoPrecoProdutoService;
 import com.pub.domain.service.ProdutoService;
 
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-@RequestMapping("/produtos/{produtoId}/historico-estoque")
+@RequestMapping("/produtos/{produtoId}/historico-preco")
 @RestController
-public class HistoricoProdutoController {
+public class HistoricoPrecoProdutoController {
 
-	private final HistoricoProdutoService historicoProdutoService;
+	private final HistoricoPrecoProdutoService historicoPrecoProdutoService;
+	
+	private final HistoricoPrecoProdutoAssembler historicoPrecoProdutoAssembler;
 	
 	private final PaginaAssembler paginaAssembler;
 	
-	private final HistoricoProdutoAssembler historicoProdutoAssembler;
-	
 	private final ProdutoService produtoService;
 	
+	
 	@GetMapping
-	public Page<HistoricoProdutoDTO> obterHistoricoProduto(@PathVariable Long produtoId, Pageable pageable, 
-			@RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate dataInicio, 
+	public Page<HistoricoPrecoProdutoDTO> obterHistoricoPrecoProduto(@PathVariable Long produtoId,
+			@RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate dataInicio,
 			@RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate dataFim,
-			@RequestParam(required = false) TipoTransacao tipoTransacao) {
+			Pageable pageable) {
 		Produto produto = produtoService.findProdutoById(produtoId);
 		
 		if((dataInicio != null && dataFim != null) && dataInicio.isAfter(dataFim))
 			throw new RequisicaoInvalidaException("Data ínicio deve ser menor ou igual a data fim");
 		
-		Page<HistoricoProduto> historicoProduto = historicoProdutoService.listarHistoricoProduto(produto, pageable, dataInicio, dataFim, tipoTransacao);
+		Page<HistoricoPrecoProduto> historicoPrecoProduto = historicoPrecoProdutoService.listarHistoricoPrecoProduto(produto, dataInicio, dataFim, pageable);
 		
-		List<HistoricoProdutoDTO> conteudoPagina = historicoProdutoAssembler.toListDTO(historicoProduto.getContent());
+		List<HistoricoPrecoProdutoDTO> conteudoPagina = historicoPrecoProdutoAssembler.toListDTO(historicoPrecoProduto.getContent());
 		
-		return paginaAssembler.toPage(conteudoPagina, pageable, historicoProduto.getTotalElements());
+		return paginaAssembler.toPage(conteudoPagina, pageable, historicoPrecoProduto.getTotalElements());
 	}
 }

@@ -13,11 +13,20 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NamedEntityGraph(
+		name = "Produto.withCategoriaAndUnidade",
+		attributeNodes = {
+				@NamedAttributeNode("categoria"),
+				@NamedAttributeNode("unidade")
+		}
+)
 @Entity
 public class Produto {
 
