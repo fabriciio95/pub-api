@@ -7,7 +7,8 @@ import com.pub.domain.model.Produto;
 public class ProdutoSpecs {
 
 	public static Specification<Produto> comNomeParecido(String nome) {
-		return (root, query, criteriaBuilder) -> criteriaBuilder.like(root.get("nome"), "%" + nome + "%");
+		return (root, query, criteriaBuilder) -> 
+				criteriaBuilder.like(criteriaBuilder.lower(root.get("nome")), "%" + nome.toLowerCase() + "%");
 	}
 	
 	public static Specification<Produto> comAtivoIgualA(boolean ativo) {
