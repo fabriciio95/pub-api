@@ -56,7 +56,7 @@ public class ProdutoService {
 		if(produtoOpt.isPresent()) {
 			Produto produtoSalvo = produtoOpt.get();
 			throw new ObjetoJaCadastradoException(String.format("Já existe um produto de nome %s e unidade %s cadastrado",
-					produtoSalvo.getNome(), produtoSalvo.getUnidade().getDescricao()));
+					produtoSalvo.getNome(), produtoSalvo.getUnidade().getNome()));
 		}
 		
 		produto.setAtivo(true);
@@ -89,7 +89,7 @@ public class ProdutoService {
 	
 		if(isProdutoJaCadastrado != null && isProdutoJaCadastrado) {
 			throw new ObjetoJaCadastradoException(String.format("Já existe um produto de nome %s e unidade %s cadastrado",
-					produto.getNome(), unidade.getDescricao()));
+					produto.getNome(), unidade.getNome()));
 		}
 		
 		if(produto.getQuantidade() != produtoSalvo.getQuantidade()) {

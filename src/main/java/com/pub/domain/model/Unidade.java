@@ -20,7 +20,7 @@ public class Unidade {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	private String descricao;
+	private String nome;
 	
 	@OneToMany(mappedBy = "unidadeDestino")
 	private List<UnidadeConversao> unidadesConversao;

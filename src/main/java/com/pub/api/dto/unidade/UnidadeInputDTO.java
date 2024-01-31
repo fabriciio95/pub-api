@@ -1,13 +1,13 @@
 package com.pub.api.dto.unidade;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class UnidadeDTO {
+public class UnidadeInputDTO {
 
-	private Long id;
-
+	@NotBlank
 	private String nome;
 }
