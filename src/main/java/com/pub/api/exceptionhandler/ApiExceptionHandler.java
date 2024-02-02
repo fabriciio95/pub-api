@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.exc.PropertyBindingException;
 import com.pub.api.exception.RequisicaoInvalidaException;
 import com.pub.api.exceptionhandler.Problema.Objeto;
 import com.pub.domain.exception.EntidadeNaoEncontradaException;
+import com.pub.domain.exception.ObjetoConflitanteException;
 import com.pub.domain.exception.ObjetoJaCadastradoException;
 import com.pub.domain.exception.ViolacaoRegraNegocioException;
 
@@ -75,6 +76,20 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 		
 		HttpStatus httpStatus = HttpStatus.CONFLICT;
 		TipoProblema tipoProblema = TipoProblema.RECURSO_JA_CADASTRADO;
+		String detalhe = excecao.getMessage();
+		
+		Problema problema = criarProblemaBuilder(httpStatus, tipoProblema, detalhe)
+				.mensagemUsuario(excecao.getMessage())
+				.build();
+		
+		return handleExceptionInternal(excecao, problema, new HttpHeaders(), httpStatus, request);
+	}
+	
+	@ExceptionHandler(ObjetoConflitanteException.class)
+	public ResponseEntity<Object> handleObjetoConflitante(ObjetoConflitanteException excecao, WebRequest request) {
+		
+		HttpStatus httpStatus = HttpStatus.CONFLICT;
+		TipoProblema tipoProblema = TipoProblema.DADOS_INVALIDOS;
 		String detalhe = excecao.getMessage();
 		
 		Problema problema = criarProblemaBuilder(httpStatus, tipoProblema, detalhe)

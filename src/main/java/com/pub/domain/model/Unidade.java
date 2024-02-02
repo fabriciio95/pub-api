@@ -1,13 +1,11 @@
 package com.pub.domain.model;
 
-import java.util.List;
 import java.util.Objects;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,9 +19,6 @@ public class Unidade {
 	private Long id;
 	
 	private String nome;
-	
-	@OneToMany(mappedBy = "unidadeDestino")
-	private List<UnidadeConversao> unidadesConversao;
 
 	@Override
 	public int hashCode() {

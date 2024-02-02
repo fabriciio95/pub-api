@@ -1,6 +1,8 @@
 package com.pub.domain.service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
@@ -10,9 +12,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.pub.domain.exception.EntidadeNaoEncontradaException;
+import com.pub.domain.exception.ObjetoConflitanteException;
 import com.pub.domain.exception.ObjetoJaCadastradoException;
 import com.pub.domain.exception.ViolacaoRegraNegocioException;
 import com.pub.domain.model.Categoria;
+import com.pub.domain.model.UnidadeConversao;
 import com.pub.domain.repository.CategoriaRepository;
 import com.pub.infrastructure.repository.spec.CategoriaSpecs;
 
@@ -23,6 +27,8 @@ import lombok.RequiredArgsConstructor;
 public class CategoriaService {
 
 	private final CategoriaRepository categoriaRepository;
+	
+	private final UnidadeConversaoService unidadeConversaoService;
 	
 	@Transactional
 	public Categoria cadastrarCategoria(Categoria categoria) {
@@ -69,6 +75,50 @@ public class CategoriaService {
 			throw new ViolacaoRegraNegocioException(String.format("Categoria de código %d não cadastrada", categoriaId));
 		
 		return true;
+	}
+	
+	@Transactional
+	public Set<UnidadeConversao> listarConversoesCategoria(Long categoriaId) {
+		Categoria categoria = findCategoriaById(categoriaId);
+		
+		return categoria.getUnidadesConversao();
+	}
+	
+	@Transactional
+	public void associarConversoes(Long categoriaId, List<Long> conversoesIds) {
+		Categoria categoria = findCategoriaById(categoriaId);
+		
+		conversoesIds.forEach(conversao -> {
+			try {
+				
+				UnidadeConversao unidadeConversao = unidadeConversaoService.findUnidadeById(conversao);
+				
+				categoria.adicionarUnidadeConversao(unidadeConversao);
+				
+			} catch(EntidadeNaoEncontradaException ex) {
+				throw new ObjetoConflitanteException(String.format("Conversão de id %d não cadastrada", conversao), ex);
+			}
+		});
+	}
+	
+	@Transactional
+	public void desassociarConversoes(Long categoriaId, List<Long> conversoesIds) {
+		Categoria categoria = findCategoriaById(categoriaId);
+		
+		conversoesIds.forEach(conversao -> {
+			try {
+				
+				UnidadeConversao unidadeConversao = unidadeConversaoService.findUnidadeById(conversao);
+				
+				if(!categoria.getUnidadesConversao().contains(unidadeConversao))
+					throw new ViolacaoRegraNegocioException(String.format("Conversão de id %d não vinculada a categoria %s", conversao, categoria.getNome()));
+				
+				categoria.removerUnidadeConversao(unidadeConversao);
+				
+			} catch(EntidadeNaoEncontradaException ex) {
+				throw new ObjetoConflitanteException(String.format("Conversão de id %d não cadastrada", conversao), ex);
+			}
+		});
 	}
 	
 	@Transactional

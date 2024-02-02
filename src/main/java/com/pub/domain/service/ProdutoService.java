@@ -150,11 +150,11 @@ public class ProdutoService {
 		
 		if(converterQuantidade) {
 		
-			unidadeConversao = produto.getUnidade().getUnidadesConversao().stream()
+			unidadeConversao = produto.getCategoria().getUnidadesConversao().stream()
 		                                            .filter(uc -> uc.getId().equals(transacaoEstoqueDTO.getUnidadeConversaoId()))
 		                                            .findFirst()
 		                                            .orElseThrow(() -> new ViolacaoRegraNegocioException(String.format("Unidade de conversão informada não vinculada"
-		                                            		+ " a unidade do produto %s de código %d", produto.getNome(), produto.getId())));
+		                                            		+ " a categoria do produto %s de código %d", produto.getNome(), produto.getId())));
 			
 			novaQuantidade = calcularQuantidadeProduto(produto.getQuantidade(), transacaoEstoqueDTO.getQuantidade(), tipoTransacao, unidadeConversao);
 		} else {

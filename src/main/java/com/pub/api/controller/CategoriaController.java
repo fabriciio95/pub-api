@@ -1,10 +1,12 @@
 package com.pub.api.controller;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,10 +19,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.pub.api.dto.categoria.CategoriaDTO;
 import com.pub.api.dto.categoria.CategoriaInputDTO;
+import com.pub.api.dto.unidadeConversao.UnidadeConversaoDTO;
 import com.pub.api.mapper.assembler.CategoriaAssembler;
 import com.pub.api.mapper.assembler.PaginaAssembler;
+import com.pub.api.mapper.assembler.UnidadeConversaoAssembler;
 import com.pub.api.mapper.disassembler.CategoriaDisassembler;
 import com.pub.domain.model.Categoria;
+import com.pub.domain.model.UnidadeConversao;
 import com.pub.domain.service.CategoriaService;
 
 import jakarta.validation.Valid;
@@ -39,9 +44,18 @@ public class CategoriaController {
 	
 	private final PaginaAssembler paginaAssembler;
 	
+	private final UnidadeConversaoAssembler unidadeConversaoAssembler;
+	
 	@GetMapping("{categoriaId}")
 	public CategoriaDTO findCategoriaPorId(@PathVariable Long categoriaId) {
 		return categoriaAssembler.toDto(categoriaService.findCategoriaById(categoriaId));
+	}
+	
+	@GetMapping("/{categoriaId}/conversoes")
+	public List<UnidadeConversaoDTO> findConversoesUnidadePorId(@PathVariable Long categoriaId, Pageable pageable) {
+	    Set<UnidadeConversao> conversoesCategoria = categoriaService.listarConversoesCategoria(categoriaId);
+
+	    return unidadeConversaoAssembler.toListDto(conversoesCategoria);
 	}
 	
 	@GetMapping
@@ -66,5 +80,17 @@ public class CategoriaController {
 		Categoria categoria = categoriaDisassembler.toEntidade(categoriaInputDTO);
 		
 		return categoriaAssembler.toDto(categoriaService.atualizarCategoria(categoria, categoriaId));
+	}
+	
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@PutMapping("/{categoriaId}/associacao-conversao")
+	public void associarConversao(@RequestBody List<Long> conversoesIds, @PathVariable Long categoriaId) {
+	    categoriaService.associarConversoes(categoriaId, conversoesIds);
+	}
+
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@DeleteMapping("/{categoriaId}/associacao-conversao")
+	public void desassociarConversao(@RequestBody List<Long> conversoesIds, @PathVariable Long categoriaId) {
+		categoriaService.desassociarConversoes(categoriaId, conversoesIds);
 	}
 }
