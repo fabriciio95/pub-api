@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -91,7 +92,7 @@ public class CategoriaService {
 		conversoesIds.forEach(conversao -> {
 			try {
 				
-				UnidadeConversao unidadeConversao = unidadeConversaoService.findUnidadeById(conversao);
+				UnidadeConversao unidadeConversao = unidadeConversaoService.findUnidadeConversaoById(conversao);
 				
 				categoria.adicionarUnidadeConversao(unidadeConversao);
 				
@@ -105,20 +106,34 @@ public class CategoriaService {
 	public void desassociarConversoes(Long categoriaId, List<Long> conversoesIds) {
 		Categoria categoria = findCategoriaById(categoriaId);
 		
-		conversoesIds.forEach(conversao -> {
+		conversoesIds.forEach(conversaoId -> {
 			try {
 				
-				UnidadeConversao unidadeConversao = unidadeConversaoService.findUnidadeById(conversao);
+				UnidadeConversao unidadeConversao = unidadeConversaoService.findUnidadeConversaoById(conversaoId);
 				
 				if(!categoria.getUnidadesConversao().contains(unidadeConversao))
-					throw new ViolacaoRegraNegocioException(String.format("Conversão de id %d não vinculada a categoria %s", conversao, categoria.getNome()));
+					throw new ViolacaoRegraNegocioException(String.format("Conversão de id %d não vinculada a categoria %s", conversaoId, categoria.getNome()));
 				
 				categoria.removerUnidadeConversao(unidadeConversao);
 				
 			} catch(EntidadeNaoEncontradaException ex) {
-				throw new ObjetoConflitanteException(String.format("Conversão de id %d não cadastrada", conversao), ex);
+				throw new ObjetoConflitanteException(String.format("Conversão de id %d não cadastrada", conversaoId), ex);
 			}
 		});
+	}
+	
+	@Transactional
+	public void excluirCategoria(Long categoriaId) {
+		try {
+			Categoria categoria = findCategoriaById(categoriaId);
+			
+			categoriaRepository.delete(categoria);
+			
+			categoriaRepository.flush();
+			
+		} catch(DataIntegrityViolationException ex) {
+			throw new ObjetoConflitanteException(String.format("Categoria de código %d possui produtos vinculados, portanto não pode ser excluída", categoriaId));
+		}
 	}
 	
 	@Transactional

@@ -17,8 +17,8 @@ public class UnidadeConversaoService {
 	
 	
 	@Transactional
-	public UnidadeConversao findUnidadeById(Long unidadeConversaoId) {
+	public UnidadeConversao findUnidadeConversaoById(Long unidadeConversaoId) {
 		return unidadeConversaoRepository.findById(unidadeConversaoId)
-				.orElseThrow(() -> new EntidadeNaoEncontradaException(String.format("Unidade de código %d não encontrada", unidadeConversaoId)));
+				.orElseThrow(() -> new EntidadeNaoEncontradaException(String.format("Conversão de código %d não encontrada", unidadeConversaoId)));
 	}
 }

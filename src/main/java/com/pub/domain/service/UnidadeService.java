@@ -3,6 +3,7 @@ package com.pub.domain.service;
 import java.util.Optional;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.pub.domain.exception.EntidadeNaoEncontradaException;
+import com.pub.domain.exception.ObjetoConflitanteException;
 import com.pub.domain.exception.ObjetoJaCadastradoException;
 import com.pub.domain.exception.ViolacaoRegraNegocioException;
 import com.pub.domain.model.Unidade;
@@ -69,6 +71,20 @@ public class UnidadeService {
 			throw new ViolacaoRegraNegocioException(String.format("Unidade de código %d não cadastrada", unidadeId));
 		
 		return true;
+	}
+	
+	@Transactional
+	public void excluirUnidade(Long unidadeId) {
+		try {
+			Unidade unidade = findUnidadeById(unidadeId);
+			
+			unidadeRepository.delete(unidade);
+			
+			unidadeRepository.flush();
+			
+		} catch(DataIntegrityViolationException ex) {
+			throw new ObjetoConflitanteException(String.format("Unidade de código %d possui produtos vinculados, portanto não pode ser excluída", unidadeId));
+		}
 	}
 	
 	@Transactional

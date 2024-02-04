@@ -93,4 +93,10 @@ public class CategoriaController {
 	public void desassociarConversao(@RequestBody List<Long> conversoesIds, @PathVariable Long categoriaId) {
 		categoriaService.desassociarConversoes(categoriaId, conversoesIds);
 	}
+	
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@DeleteMapping("/{categoriaId}")
+	public void excluirUnidadePorId(@PathVariable Long categoriaId) {
+		categoriaService.excluirCategoria(categoriaId);
+	}
 }
