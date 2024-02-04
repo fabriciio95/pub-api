@@ -1,7 +1,7 @@
 package com.pub.api.mapper.assembler;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
@@ -21,7 +21,7 @@ public class UnidadeConversaoAssembler {
 		return modelMapper.map(unidadeConversao, UnidadeConversaoDTO.class);
 	}
 	
-	public List<UnidadeConversaoDTO> toListDto(Set<UnidadeConversao> unidadesConversao) {
+	public List<UnidadeConversaoDTO> toListDto(Collection<UnidadeConversao> unidadesConversao) {
 		return unidadesConversao.stream().map(c -> modelMapper.map(c, UnidadeConversaoDTO.class)).toList();
 	}
 }
