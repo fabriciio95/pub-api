@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.pub.domain.exception.EntidadeNaoEncontradaException;
 import com.pub.domain.exception.ObjetoJaCadastradoException;
 import com.pub.domain.exception.ViolacaoRegraNegocioException;
+import com.pub.domain.model.HistoricoProduto;
 import com.pub.domain.model.PerdaAvaria;
 import com.pub.domain.model.Produto;
 import com.pub.domain.model.Unidade;
@@ -46,10 +47,16 @@ public class ProdutoService {
 	private final PerdaAvariaService perdaAvariaService;
 	
 	@Transactional
-	public Produto cadastrarProduto(Produto produto) {
+	public Produto cadastrarProduto(Produto produto, Long unidadeConversaoId) {
         unidadeService.existsUnidadeById(produto.getUnidade().getId());
 		
-		categoriaService.existsCategoriaById(produto.getCategoria().getId());
+        try {
+        	
+        	produto.setCategoria(categoriaService.findCategoriaById(produto.getCategoria().getId()));
+        	
+        } catch(EntidadeNaoEncontradaException ex) {
+			throw new ViolacaoRegraNegocioException(String.format("Categoria de código %d não cadastrada", produto.getCategoria().getId()));
+        }
 		
 		Optional<Produto> produtoOpt = produtoRepository.findByNomeIgnoreCaseAndUnidadeId(produto.getNome(), produto.getUnidade().getId());
 		
@@ -60,14 +67,30 @@ public class ProdutoService {
 		}
 		
 		produto.setAtivo(true);
-		produto.setQuantidade(produto.getQuantidade() == null ? 0 : produto.getQuantidade());
+		
+		Integer quantidadeInformada = produto.getQuantidade();
+		
+		produto.setQuantidade(0);
+		
+		produto.setQuantidade(calcularQuantidadeEstoqueProduto(produto, unidadeConversaoId, quantidadeInformada, TipoTransacao.COMPRA));
 		
 		produto = produtoRepository.save(produto);
 		
 		historicoPrecoProdutoService.salvarHistoricoPrecoProduto(produto);
 		
 		if(produto.getQuantidade() > 0) {
-			historicoProdutoService.salvarHistoricoProduto(produto, TipoTransacao.COMPRA, null);
+			HistoricoProduto historicoProduto = HistoricoProduto.builder()
+				   .data(OffsetDateTime.now())
+				   .valorTotal(produto.getPreco().multiply(new BigDecimal(produto.getQuantidade())))
+				   .valorUnitario(produto.getPreco())
+				   .quantidadeTransacao(produto.getQuantidade())
+				   .quantidadeEstoque(produto.getQuantidade())
+				   .produto(produto)
+				   .unidade(produto.getUnidade())
+				   .tipoTransacao(TipoTransacao.COMPRA)
+			   .build();
+			
+			historicoProdutoService.salvarHistoricoProduto(historicoProduto);
 		}
 		
 		return produto;
@@ -135,31 +158,16 @@ public class ProdutoService {
 			throw new ViolacaoRegraNegocioException("Para registro de compra não pode ser informado motivo de perda ou avaria");
 		}
 		
+		if(tipoTransacao.equals(TipoTransacao.COMPRA) && (transacaoEstoqueDTO.getValorTotal() == null || transacaoEstoqueDTO.getValorTotal().compareTo(BigDecimal.ZERO) == 0)) {
+			throw new ViolacaoRegraNegocioException("Para registro de compra deve ser informado um valor total maior do que zero");
+		}
+		
 		if(tipoTransacao.equals(TipoTransacao.VENDA)) {
 			throw new ViolacaoRegraNegocioException("Tipo de transação inválida, registros de vendas é calculado de forma automática");
 		}
 		
-		boolean converterQuantidade = true;
-		
-		if(transacaoEstoqueDTO.getUnidadeConversaoId() == null) 
-			converterQuantidade = false;
-		
-		UnidadeConversao unidadeConversao = null;
-		
-		Integer novaQuantidade = null;
-		
-		if(converterQuantidade) {
-		
-			unidadeConversao = produto.getCategoria().getUnidadesConversao().stream()
-		                                            .filter(uc -> uc.getId().equals(transacaoEstoqueDTO.getUnidadeConversaoId()))
-		                                            .findFirst()
-		                                            .orElseThrow(() -> new ViolacaoRegraNegocioException(String.format("Unidade de conversão informada não vinculada"
-		                                            		+ " a categoria do produto %s de código %d", produto.getNome(), produto.getId())));
-			
-			novaQuantidade = calcularQuantidadeProduto(produto.getQuantidade(), transacaoEstoqueDTO.getQuantidade(), tipoTransacao, unidadeConversao);
-		} else {
-			novaQuantidade = calcularQuantidadeProduto(produto.getQuantidade(), transacaoEstoqueDTO.getQuantidade(), tipoTransacao);
-		}
+		Integer novaQuantidade = calcularQuantidadeEstoqueProduto(produto, transacaoEstoqueDTO.getUnidadeConversaoId(), 
+				transacaoEstoqueDTO.getQuantidade(), tipoTransacao);
 		
 		PerdaAvaria perdaAvaria = null;
 		
@@ -176,7 +184,7 @@ public class ProdutoService {
 	                                 .build();
 			
 			if(!isProdutoTemEstoqueDisponivel(produto.getQuantidade(), quantidadeTransacao)) {
-				throw new ViolacaoRegraNegocioException(String.format(" Produto de código %d sem estoque disponível", transacaoEstoqueDTO.getProdutoId()));
+				throw new ViolacaoRegraNegocioException(String.format("Produto de código %d sem estoque disponível", transacaoEstoqueDTO.getProdutoId()));
 			}
 			
 			perdaAvaria =  perdaAvariaService.salvarPerdaAvaria(perdaAvaria);
@@ -184,9 +192,70 @@ public class ProdutoService {
 		
 		produto.setQuantidade(novaQuantidade);
 		
-		historicoProdutoService.salvarHistoricoProduto(produto, tipoTransacao, perdaAvaria, quantidadeTransacao);
+		HistoricoProduto historicoProduto = HistoricoProduto.builder()
+				   .data(OffsetDateTime.now())
+				   .valorTotal(transacaoEstoqueDTO.getValorTotal())
+				   .valorUnitario(calcularPrecoUnitarioProduto(transacaoEstoqueDTO, produto, tipoTransacao))
+				   .quantidadeTransacao(quantidadeTransacao)
+				   .quantidadeEstoque(produto.getQuantidade())
+				   .produto(produto)
+				   .unidade(produto.getUnidade())
+				   .tipoTransacao(tipoTransacao)
+				   .perdaAvaria(perdaAvaria)
+			   .build();
+		
+		historicoProdutoService.salvarHistoricoProduto(historicoProduto);
+	}
+
+	private UnidadeConversao obterUnidadeConversao(Long unidadeConversaoId, Produto produto) {
+		return produto.getCategoria().getUnidadesConversao().stream()
+		                                        .filter(uc -> uc.getId().equals(unidadeConversaoId))
+		                                        .findFirst()
+		                                        .orElseThrow(() -> new ViolacaoRegraNegocioException(String.format("Unidade de conversão informada não vinculada"
+		                                        		+ " a categoria do produto %s de código %d", produto.getNome(), produto.getId())));
 	}
 	
+	private Integer calcularQuantidadeEstoqueProduto(Produto produto, Long idUnidadeConversao, Integer quantidadeTransacao, TipoTransacao tipoTransacao) {
+		if(quantidadeTransacao == null || quantidadeTransacao == 0)
+			return 0;
+		
+		boolean converterQuantidade = true;
+		
+		if(idUnidadeConversao == null) 
+			converterQuantidade = false;
+		
+		UnidadeConversao unidadeConversao = null;
+		
+		if(converterQuantidade) {
+			
+			unidadeConversao = obterUnidadeConversao(idUnidadeConversao, produto);
+		
+			Integer quantidadeConvertida = converterQuantidade(quantidadeTransacao, unidadeConversao);
+			
+			return calcularQuantidadeProduto(produto.getQuantidade(), quantidadeConvertida, tipoTransacao);
+		} 
+			
+		return calcularQuantidadeProduto(produto.getQuantidade(), quantidadeTransacao, tipoTransacao);
+	}
+	
+	private BigDecimal calcularPrecoUnitarioProduto(TransacaoEstoqueDTO transacaoEstoqueDTO, Produto produto, TipoTransacao tipoTransacao) {
+		if(tipoTransacao.equals(TipoTransacao.PERDA))
+			return null;
+		
+		if(transacaoEstoqueDTO.getUnidadeConversaoId() == null)
+			return transacaoEstoqueDTO.getValorTotal().divide(new BigDecimal(transacaoEstoqueDTO.getQuantidade()));
+		
+		UnidadeConversao unidadeConversao = obterUnidadeConversao(transacaoEstoqueDTO.getUnidadeConversaoId(), produto);
+		
+		Integer quantidadeConvertida = converterQuantidade(transacaoEstoqueDTO.getQuantidade(), unidadeConversao);
+		
+		return transacaoEstoqueDTO.getValorTotal().divide(new BigDecimal(quantidadeConvertida));
+	}
+	
+	private Integer converterQuantidade(Integer quantidade, UnidadeConversao unidadeConversao) {
+		return quantidade * unidadeConversao.getFatorConversao();
+	}
+
 	public Page<Produto> pesquisarProdutos(Long produtoId, String nome, Boolean ativo, Long categoriaId, Long unidadeId, Pageable pageable) {
 		
 		Specification<Produto> spec = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
@@ -224,13 +293,6 @@ public class ProdutoService {
 		}
 		
 		return novaQuantidade;
-	}
-	
-	private Integer calcularQuantidadeProduto(Integer quantidadeAtual, Integer quantidadeInformada, TipoTransacao tipoTransacao, UnidadeConversao unidadeConversao) {
-		
-	    Integer quantidadeConvertida = quantidadeInformada * unidadeConversao.getFatorConversao();
-	    
-		return calcularQuantidadeProduto(quantidadeAtual, quantidadeConvertida, tipoTransacao);
 	}
 	
 	private boolean isProdutoTemEstoqueDisponivel(Integer quantidadeAtual, Integer quantidadeTransacao) {

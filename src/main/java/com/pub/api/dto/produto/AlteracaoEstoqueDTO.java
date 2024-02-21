@@ -1,5 +1,7 @@
 package com.pub.api.dto.produto;
 
+import java.math.BigDecimal;
+
 import com.pub.api.dto.perdaavaria.PerdaAvariaInputDTO;
 import com.pub.api.dto.unidadeConversao.UnidadeConversaoIdDTO;
 
@@ -13,6 +15,8 @@ public class AlteracaoEstoqueDTO {
 	private ProdutoIdDTO produto;
 
 	private Integer quantidade;
+	
+	private BigDecimal valorTotal;
 	
 	private String tipoTransacao;
 	

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import com.pub.api.dto.categoria.CategoriaIdDTO;
 import com.pub.api.dto.unidade.UnidadeIdDTO;
+import com.pub.api.dto.unidadeConversao.UnidadeConversaoIdDTO;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
@@ -34,4 +35,6 @@ public class ProdutoInputDTO {
 	@Valid
 	@NotNull
 	private UnidadeIdDTO unidade;
+	
+	private UnidadeConversaoIdDTO unidadeConversao;
 }

@@ -33,9 +33,13 @@ public class HistoricoProduto {
 	
 	private OffsetDateTime data;
 	
-	private BigDecimal preco;
+	private BigDecimal valorTotal;
 	
-	private Integer quantidade;
+	private BigDecimal valorUnitario;
+	
+	private Integer quantidadeTransacao;
+	
+	private Integer quantidadeEstoque;
 	
 	@Enumerated(EnumType.STRING)
 	private TipoTransacao tipoTransacao;

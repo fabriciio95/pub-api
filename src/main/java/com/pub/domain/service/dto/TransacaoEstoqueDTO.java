@@ -1,5 +1,7 @@
 package com.pub.domain.service.dto;
 
+import java.math.BigDecimal;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,6 +12,8 @@ public class TransacaoEstoqueDTO {
 	private Long produtoId;
 	
 	private Integer quantidade;
+	
+	private BigDecimal valorTotal;
 	
 	private Long unidadeConversaoId;
 	
