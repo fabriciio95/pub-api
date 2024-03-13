@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -130,6 +131,18 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 		
 		Problema problema = criarProblemaBuilder(httpStatus, TipoProblema.DADOS_INVALIDOS, ex.getMessage())
 				.mensagemUsuario(ex.getMessage())
+				.build();
+		
+		return handleExceptionInternal(ex, problema,  new HttpHeaders(), httpStatus, request);
+	}
+	
+	@ExceptionHandler(PropertyReferenceException.class) 
+	public ResponseEntity<Object> handlePropertyReferenceException(PropertyReferenceException ex, WebRequest request) {
+		
+		HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
+		
+		Problema problema = criarProblemaBuilder(httpStatus, TipoProblema.DADOS_INVALIDOS, ex.getMessage())
+				.mensagemUsuario(MSG_ERRO_GENERICA_USUARIO_FINAL)
 				.build();
 		
 		return handleExceptionInternal(ex, problema,  new HttpHeaders(), httpStatus, request);

@@ -16,6 +16,8 @@ public enum TipoTransacao {
 			}
 		}
 		
-		throw new ViolacaoRegraNegocioException(String.format("Tipo de transação ('%s') informada inválida", tipoTransacao));
+		String mensagemErro = tipoTransacao == null ? "Tipo de transação informada inválida" : String.format("Tipo de transação ('%s') informada inválida", tipoTransacao);
+		
+		throw new ViolacaoRegraNegocioException(mensagemErro);
 	}
 }

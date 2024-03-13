@@ -36,5 +36,7 @@ public class ProdutoInputDTO {
 	@NotNull
 	private UnidadeIdDTO unidade;
 	
+	private BigDecimal valorTotal;
+	
 	private UnidadeConversaoIdDTO unidadeConversao;
 }

@@ -3,6 +3,7 @@ package com.pub.domain.service;
 import static com.pub.infrastructure.repository.spec.ProdutoSpecs.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 
@@ -47,7 +48,7 @@ public class ProdutoService {
 	private final PerdaAvariaService perdaAvariaService;
 	
 	@Transactional
-	public Produto cadastrarProduto(Produto produto, Long unidadeConversaoId) {
+	public Produto cadastrarProduto(Produto produto, Long unidadeConversaoId, BigDecimal valorTotal) {
         unidadeService.existsUnidadeById(produto.getUnidade().getId());
 		
         try {
@@ -68,7 +69,7 @@ public class ProdutoService {
 		
 		produto.setAtivo(true);
 		
-		Integer quantidadeInformada = produto.getQuantidade();
+		Integer quantidadeInformada = produto.getQuantidade() != null ? produto.getQuantidade() : 0;
 		
 		produto.setQuantidade(0);
 		
@@ -78,11 +79,15 @@ public class ProdutoService {
 		
 		historicoPrecoProdutoService.salvarHistoricoPrecoProduto(produto);
 		
-		if(produto.getQuantidade() > 0) {
+		if(produto.getQuantidade() > 0) {		
+			if(valorTotal == null || valorTotal.compareTo(BigDecimal.ZERO) == 0) {
+				throw new ViolacaoRegraNegocioException("Para registro de quantidade de estoque deve ser informado um valor total maior do que zero");
+			}
+			
 			HistoricoProduto historicoProduto = HistoricoProduto.builder()
 				   .data(OffsetDateTime.now())
-				   .valorTotal(produto.getPreco().multiply(new BigDecimal(produto.getQuantidade())))
-				   .valorUnitario(produto.getPreco())
+				   .valorTotal(valorTotal)
+				   .valorUnitario(valorTotal.divide(new BigDecimal(produto.getQuantidade()), 2, RoundingMode.HALF_UP))
 				   .quantidadeTransacao(produto.getQuantidade())
 				   .quantidadeEstoque(produto.getQuantidade())
 				   .produto(produto)
@@ -115,7 +120,7 @@ public class ProdutoService {
 					produto.getNome(), unidade.getNome()));
 		}
 		
-		if(produto.getQuantidade() != produtoSalvo.getQuantidade()) {
+		if(!produtoSalvo.getQuantidade().equals(produto.getQuantidade())) {
 			throw new ViolacaoRegraNegocioException(String.format("A quantidade do produto %s não pode ser alterada ao editar o produto, é necessário um registro de alteração de estoque do produto para isso",
 					produtoSalvo.getNome()));
 		}
@@ -184,8 +189,10 @@ public class ProdutoService {
 	                                 .build();
 			
 			if(!isProdutoTemEstoqueDisponivel(produto.getQuantidade(), quantidadeTransacao)) {
-				throw new ViolacaoRegraNegocioException(String.format("Produto de código %d sem estoque disponível", transacaoEstoqueDTO.getProdutoId()));
+				throw new ViolacaoRegraNegocioException(String.format("Produto de código %d sem estoque suficiente disponível", transacaoEstoqueDTO.getProdutoId()));
 			}
+			
+			transacaoEstoqueDTO.setValorTotal(null);
 			
 			perdaAvaria =  perdaAvariaService.salvarPerdaAvaria(perdaAvaria);
 		}
@@ -249,7 +256,7 @@ public class ProdutoService {
 		
 		Integer quantidadeConvertida = converterQuantidade(transacaoEstoqueDTO.getQuantidade(), unidadeConversao);
 		
-		return transacaoEstoqueDTO.getValorTotal().divide(new BigDecimal(quantidadeConvertida));
+		return transacaoEstoqueDTO.getValorTotal().divide(new BigDecimal(quantidadeConvertida), 2, RoundingMode.HALF_UP);
 	}
 	
 	private Integer converterQuantidade(Integer quantidade, UnidadeConversao unidadeConversao) {

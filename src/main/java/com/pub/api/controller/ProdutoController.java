@@ -74,7 +74,7 @@ public class ProdutoController {
 		Long unidadeConversaoId = produtoInputDTO.getUnidadeConversao() != null && produtoInputDTO.getUnidadeConversao().getId() != null ? 
 				produtoInputDTO.getUnidadeConversao().getId() : null;
 		
-		return produtoAssembler.toDTO(produtoService.cadastrarProduto(produto, unidadeConversaoId));
+		return produtoAssembler.toDTO(produtoService.cadastrarProduto(produto, unidadeConversaoId, produtoInputDTO.getValorTotal()));
 	}
 	
 	@PutMapping("/{produtoId}")

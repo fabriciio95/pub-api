@@ -21,9 +21,13 @@ public class HistoricoProdutoDTO {
 	
 	private OffsetDateTime data;
 	
-	private BigDecimal preco;
+	private BigDecimal valorTotal;
 	
-	private Integer quantidade;
+	private BigDecimal valorUnitario;
+	
+	private Integer quantidadeTransacao;
+	
+	private Integer quantidadeEstoque;
 	
 	private TipoTransacao tipoTransacao;
 	
