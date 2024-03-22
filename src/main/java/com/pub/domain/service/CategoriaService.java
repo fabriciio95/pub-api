@@ -52,7 +52,7 @@ public class CategoriaService {
 			throw new ObjetoJaCadastradoException(String.format("Já existe uma categoria de nome %s cadastrada", categoria.getNome()));
 		}
 		
-		BeanUtils.copyProperties(categoria, categoriaSalva, "id");
+		BeanUtils.copyProperties(categoria, categoriaSalva, "id", "unidadesConversao");
 	
 		return categoriaSalva;
 	}
