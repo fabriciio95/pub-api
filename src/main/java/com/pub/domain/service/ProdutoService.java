@@ -1,6 +1,10 @@
 package com.pub.domain.service;
 
-import static com.pub.infrastructure.repository.spec.ProdutoSpecs.*;
+import static com.pub.infrastructure.repository.spec.ProdutoSpecs.comAtivoIgualA;
+import static com.pub.infrastructure.repository.spec.ProdutoSpecs.comCategoriaIdIgualA;
+import static com.pub.infrastructure.repository.spec.ProdutoSpecs.comNomeParecido;
+import static com.pub.infrastructure.repository.spec.ProdutoSpecs.comProdutoIdIgualA;
+import static com.pub.infrastructure.repository.spec.ProdutoSpecs.comUnidadeIdIgualA;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -18,10 +22,13 @@ import com.pub.domain.exception.EntidadeNaoEncontradaException;
 import com.pub.domain.exception.ObjetoJaCadastradoException;
 import com.pub.domain.exception.ViolacaoRegraNegocioException;
 import com.pub.domain.model.HistoricoProduto;
+import com.pub.domain.model.Lancamento;
 import com.pub.domain.model.PerdaAvaria;
 import com.pub.domain.model.Produto;
 import com.pub.domain.model.Unidade;
 import com.pub.domain.model.UnidadeConversao;
+import com.pub.domain.model.enums.ModalidadeLancamento;
+import com.pub.domain.model.enums.TipoLancamento;
 import com.pub.domain.model.enums.TipoTransacao;
 import com.pub.domain.repository.ProdutoRepository;
 import com.pub.domain.repository.UnidadeRepository;
@@ -46,6 +53,8 @@ public class ProdutoService {
 	private final UnidadeService unidadeService;
 	
 	private final PerdaAvariaService perdaAvariaService;
+	
+	private final LancamentoService lancamentoService;
 	
 	@Transactional
 	public Produto cadastrarProduto(Produto produto, Long unidadeConversaoId, BigDecimal valorTotal) {
@@ -212,6 +221,18 @@ public class ProdutoService {
 			   .build();
 		
 		historicoProdutoService.salvarHistoricoProduto(historicoProduto);
+		
+		if(tipoTransacao.equals(TipoTransacao.COMPRA)) {
+			Lancamento lancamento = Lancamento.builder()
+					                          	 .descricao("Reposição de estoque para o produto " + produto.getNome())
+					                          	 .historicoProduto(historicoProduto)
+					                          	 .modalidade(ModalidadeLancamento.ALTERACAO_ESTOQUE)
+					                          	 .tipo(TipoLancamento.DESPESA)
+					                          	 .valor(transacaoEstoqueDTO.getValorTotal())
+											  .build();
+			
+			lancamentoService.cadastrarLancamento(lancamento);
+		}
 	}
 
 	private UnidadeConversao obterUnidadeConversao(Long unidadeConversaoId, Produto produto) {
