@@ -231,7 +231,7 @@ public class ProdutoService {
 					                          	 .valor(transacaoEstoqueDTO.getValorTotal())
 											  .build();
 			
-			lancamentoService.cadastrarLancamento(lancamento);
+			lancamentoService.cadastrarLancamento(lancamento, false);
 		}
 	}
 

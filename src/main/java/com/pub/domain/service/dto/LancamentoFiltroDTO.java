@@ -6,12 +6,14 @@ import java.time.LocalDate;
 import com.pub.domain.model.enums.ModalidadeLancamento;
 import com.pub.domain.model.enums.TipoLancamento;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+@Builder
 @Getter
 @Setter
-public class LancamentoDTO {
+public class LancamentoFiltroDTO {
 	
 	private LocalDate dataInicio;
 	
@@ -24,5 +26,7 @@ public class LancamentoDTO {
 	private ModalidadeLancamento modalidade;
 	
 	private Long produtoId;
+	
+	private String descricao;
 	
 }
