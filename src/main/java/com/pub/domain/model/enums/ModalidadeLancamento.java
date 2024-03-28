@@ -18,7 +18,7 @@ public enum ModalidadeLancamento {
 		this.descricao = descricao;
 	}
 	
-	public static ModalidadeLancamento findModalidadePorDescricao(String descricao) {
+	public static ModalidadeLancamento findModalidadePorDescricao(String descricao, boolean lancarExceptionModalidadeNaoEncontrada) {
 		
 		for(ModalidadeLancamento modalidade : values()) {
 			if(modalidade.getDescricao().equalsIgnoreCase(descricao)) {
@@ -26,8 +26,13 @@ public enum ModalidadeLancamento {
 			}
 		}
 		
-		String mensagemErro = descricao == null ? "Modalidade informada inválida" : String.format("Modalidade ('%s') informada inválida", descricao);
+		if(lancarExceptionModalidadeNaoEncontrada) {
+			
+			String mensagemErro = descricao == null ? "Modalidade informada inválida" : String.format("Modalidade ('%s') informada inválida", descricao);
+			
+			throw new ViolacaoRegraNegocioException(mensagemErro);
+		} 
 		
-		throw new ViolacaoRegraNegocioException(mensagemErro);
+		return null;
 	}
 }

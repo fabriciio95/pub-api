@@ -65,7 +65,7 @@ public class LancamentoController {
 																		.dataFim(dataFim)
 																		.produtoId(produtoId)
 																		.lancamentoId(lancamentoId)
-																		.modalidade(definirModalidade(modalidade))
+																		.modalidade(ModalidadeLancamento.findModalidadePorDescricao(modalidade, false))
 																		.descricao(descricao)
 																		.tipoLancamento(tipoLancamento)
 				                                                     .build();
@@ -107,18 +107,5 @@ public class LancamentoController {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void excluirLancamento(@PathVariable Long lancamentoId) {
 		lancamentoService.excluirLancamento(lancamentoId);
-	}
-	
-	private ModalidadeLancamento definirModalidade(String modalidade) {
-		ModalidadeLancamento modalidadeLancamentoEnum = null;
-		
-		if(modalidade != null) {
-			try {
-				modalidadeLancamentoEnum = ModalidadeLancamento.findModalidadePorDescricao(modalidade);
-			} catch(Exception e) {
-				modalidadeLancamentoEnum = null;
-			}
-		}
-		return modalidadeLancamentoEnum;
 	}
 }

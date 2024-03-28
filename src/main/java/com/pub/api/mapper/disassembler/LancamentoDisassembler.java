@@ -19,7 +19,7 @@ public class LancamentoDisassembler {
 		Lancamento lancamento = modelMapper.map(lancamentoInputDTO, Lancamento.class);
 		
 		if(lancamentoInputDTO.getModalidade() != null) {
-			lancamento.setModalidade(ModalidadeLancamento.findModalidadePorDescricao(lancamentoInputDTO.getModalidade()));
+			lancamento.setModalidade(ModalidadeLancamento.findModalidadePorDescricao(lancamentoInputDTO.getModalidade(), true));
 		}
 		
 		return lancamento;
