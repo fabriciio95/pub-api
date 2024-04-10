@@ -29,4 +29,6 @@ public class LancamentoFiltroDTO {
 	
 	private String descricao;
 	
+	private Long eventoId;
+	
 }

@@ -5,6 +5,7 @@ import java.time.OffsetDateTime;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.pub.api.dto.evento.EventoDTO;
 import com.pub.api.dto.historico.HistoricoProdutoDTO;
 import com.pub.domain.model.enums.TipoLancamento;
 
@@ -29,4 +30,6 @@ public class LancamentoDTO {
 	private OffsetDateTime dataCadastro;
 
 	private HistoricoProdutoDTO historicoProduto;
+	
+	private EventoDTO evento;
 }

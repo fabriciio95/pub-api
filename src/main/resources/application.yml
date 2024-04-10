@@ -16,3 +16,10 @@ spring:
   main:
     allow-circular-references: false
 
+app:
+  jobs:
+     job-encerrar-eventos:
+         cron: ${CRON_JOB_ENCERRAR_EVENTOS:0 * * * * ?}
+     job-iniciar-eventos:
+         cron: ${CRON_JOB_INICIAR_EVENTOS:30 * * * * ?}
+

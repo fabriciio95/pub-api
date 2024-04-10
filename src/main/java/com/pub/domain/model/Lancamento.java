@@ -17,6 +17,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -53,8 +54,12 @@ public class Lancamento {
 	private OffsetDateTime dataAtualizacao;
 	
 	@JoinColumn(nullable = true, name = "historico_produto_id")
-	@OneToOne
+	@OneToOne(optional = true)
 	private HistoricoProduto historicoProduto;
+	
+	@JoinColumn(nullable = true, name = "evento_id")
+	@ManyToOne(optional = true)
+	private Evento evento;
 
 	@Override
 	public int hashCode() {

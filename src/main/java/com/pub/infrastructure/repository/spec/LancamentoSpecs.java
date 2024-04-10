@@ -35,6 +35,10 @@ public class LancamentoSpecs {
 		return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("historicoProduto").get("produto").get("id"), produtoId);
 	}
 	
+	public static Specification<Lancamento> comEventoIdIgualA(Long eventoId) {
+		return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("evento").get("id"), eventoId);
+	}
+	
 	public static Specification<Lancamento> comDescricaoParecida(String descricao) {
 		return (root, query, criteriaBuilder) -> 
 				criteriaBuilder.like(criteriaBuilder.lower(root.get("descricao")), "%" + descricao.toLowerCase() + "%");

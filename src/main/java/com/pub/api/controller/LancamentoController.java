@@ -52,6 +52,7 @@ public class LancamentoController {
 			@RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate dataInicio, 
 			@RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate dataFim,
 			@RequestParam(required = false) Long produtoId, 
+			@RequestParam(required = false) Long eventoId, 
 			@RequestParam(required = false) Long lancamentoId, 
 			@RequestParam(required = false) String modalidade, 
 			@RequestParam(required = false) String descricao, 
@@ -64,6 +65,7 @@ public class LancamentoController {
 																		.dataInicio(dataInicio)
 																		.dataFim(dataFim)
 																		.produtoId(produtoId)
+																		.eventoId(eventoId)
 																		.lancamentoId(lancamentoId)
 																		.modalidade(ModalidadeLancamento.findModalidadePorDescricao(modalidade, false))
 																		.descricao(descricao)
@@ -107,5 +109,17 @@ public class LancamentoController {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void excluirLancamento(@PathVariable Long lancamentoId) {
 		lancamentoService.excluirLancamento(lancamentoId);
+	}
+	
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@PutMapping("/{lancamentoId}/associacao-evento/{eventoId}")
+	public void associarEvento(@PathVariable Long lancamentoId, @PathVariable Long eventoId) {
+		lancamentoService.associacarEvento(lancamentoId, eventoId);
+	}
+	
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@DeleteMapping("/{lancamentoId}/associacao-evento/{eventoId}")
+	public void desassociarEvento(@PathVariable Long lancamentoId, @PathVariable Long eventoId) {
+		lancamentoService.desassociacarEvento(lancamentoId, eventoId);
 	}
 }

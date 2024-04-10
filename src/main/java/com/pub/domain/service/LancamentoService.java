@@ -6,17 +6,18 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.pub.domain.exception.EntidadeNaoEncontradaException;
 import com.pub.domain.exception.ObjetoConflitanteException;
 import com.pub.domain.exception.ViolacaoRegraNegocioException;
+import com.pub.domain.model.Evento;
 import com.pub.domain.model.Lancamento;
 import com.pub.domain.model.enums.ModalidadeLancamento;
 import com.pub.domain.repository.LancamentoRepository;
 import com.pub.domain.service.dto.LancamentoFiltroDTO;
 import com.pub.infrastructure.repository.spec.LancamentoSpecs;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -25,38 +26,44 @@ public class LancamentoService {
 
 	private final LancamentoRepository lancamentoRepository;
 	
+	private final EventoService eventoService;
+	
 	
 	@Transactional
-	public Page<Lancamento> pesquisarLancamentos(LancamentoFiltroDTO lancamentoDTO, Pageable pageable) {
+	public Page<Lancamento> pesquisarLancamentos(LancamentoFiltroDTO filtro, Pageable pageable) {
 		
 		Specification<Lancamento> spec = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
 		
-		if(lancamentoDTO.getDataInicio() != null) {
-			spec = spec.and(LancamentoSpecs.comDataMaiorOuIgualA(lancamentoDTO.getDataInicio()));
+		if(filtro.getDataInicio() != null) {
+			spec = spec.and(LancamentoSpecs.comDataMaiorOuIgualA(filtro.getDataInicio()));
 		}
 		
-		if(lancamentoDTO.getDataFim() != null) {
-			spec = spec.and(LancamentoSpecs.comDataMenorOuIgualA(lancamentoDTO.getDataFim()));
+		if(filtro.getDataFim() != null) {
+			spec = spec.and(LancamentoSpecs.comDataMenorOuIgualA(filtro.getDataFim()));
 		}
 		
-		if(lancamentoDTO.getLancamentoId() != null) {
-			spec = spec.and(LancamentoSpecs.comIdIgualA(lancamentoDTO.getLancamentoId()));
+		if(filtro.getLancamentoId() != null) {
+			spec = spec.and(LancamentoSpecs.comIdIgualA(filtro.getLancamentoId()));
 		}
 		
-		if(lancamentoDTO.getModalidade() != null) {
-			spec = spec.and(LancamentoSpecs.comModalidadeIgualA(lancamentoDTO.getModalidade()));
+		if(filtro.getModalidade() != null) {
+			spec = spec.and(LancamentoSpecs.comModalidadeIgualA(filtro.getModalidade()));
 		}
 		
-		if(lancamentoDTO.getDescricao() != null) {
-			spec = spec.and(LancamentoSpecs.comDescricaoParecida(lancamentoDTO.getDescricao()));
+		if(filtro.getDescricao() != null) {
+			spec = spec.and(LancamentoSpecs.comDescricaoParecida(filtro.getDescricao()));
 		}
 		
-		if(lancamentoDTO.getTipoLancamento() != null) {
-			spec = spec.and(LancamentoSpecs.comTipoIgualA(lancamentoDTO.getTipoLancamento()));
+		if(filtro.getTipoLancamento() != null) {
+			spec = spec.and(LancamentoSpecs.comTipoIgualA(filtro.getTipoLancamento()));
 		}
 		
-		if(lancamentoDTO.getProdutoId() != null) {
-			spec = spec.and(LancamentoSpecs.comProdutoIdIgualA(lancamentoDTO.getProdutoId()));
+		if(filtro.getProdutoId() != null) {
+			spec = spec.and(LancamentoSpecs.comProdutoIdIgualA(filtro.getProdutoId()));
+		}
+		
+		if(filtro.getEventoId() != null) {
+			spec = spec.and(LancamentoSpecs.comEventoIdIgualA(filtro.getEventoId()));
 		}
 		
 		return lancamentoRepository.findAll(spec, pageable);
@@ -89,6 +96,27 @@ public class LancamentoService {
 		BeanUtils.copyProperties(lancamento, lancamentoCadastrado, "id", "historicoProduto", "dataCadastro");
 		
 		return lancamentoCadastrado;
+	}
+	
+	@Transactional
+	public void associacarEvento(Long lancamentoId, Long eventoId) {
+		Lancamento lancamento = findLancamentoPorId(lancamentoId);
+		
+		Evento evento = eventoService.findEventoById(eventoId);
+		
+		lancamento.setEvento(evento);
+	}
+	
+	@Transactional
+	public void desassociacarEvento(Long lancamentoId, Long eventoId) {
+		Lancamento lancamento = findLancamentoPorId(lancamentoId);
+		
+		if(eventoService.existsEventoById(eventoId)) {
+			lancamento.setEvento(null);
+			return;
+		}
+		
+		throw new EntidadeNaoEncontradaException(String.format("Evento de código %d não encontrado", eventoId));
 	}
 	
 	private void validarModalidade(ModalidadeLancamento modalidade) {
