@@ -16,9 +16,6 @@ import jakarta.persistence.criteria.Path;
 
 public class EventoSpecs {
 	
-	//.atStartOfDay().atOffset(ZoneOffset.UTC)
-	//.atTime(LocalTime.MAX).atOffset(ZoneOffset.UTC)
-
 	public static Specification<Evento> comDataInicioMaiorOuIgualA(OffsetDateTime data) {
 		return (root, query, criteriaBuilder) -> criteriaBuilder.greaterThanOrEqualTo(root.get("dataHoraInicioEvento"), data);
 	}
