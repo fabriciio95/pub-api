@@ -1,6 +1,8 @@
 package com.pub.domain.service;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
@@ -14,7 +16,7 @@ import com.pub.domain.exception.ViolacaoRegraNegocioException;
 import com.pub.domain.model.Promocao;
 import com.pub.domain.model.enums.StatusPromocao;
 import com.pub.domain.repository.PromocaoRepository;
-import com.pub.domain.service.dto.PromocaoFiltro;
+import com.pub.domain.service.dto.PromocaoFiltroDTO;
 import static com.pub.infrastructure.repository.spec.PromocaoSpecs.*;
 
 import lombok.RequiredArgsConstructor;
@@ -23,11 +25,11 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class PromocaoService {
 
-	private PromocaoRepository promocaoRepository;
+	private final PromocaoRepository promocaoRepository;
 	
 	
 	@Transactional
-	public Page<Promocao> pesquisar(PromocaoFiltro filtro, Pageable pageable) {
+	public Page<Promocao> pesquisar(PromocaoFiltroDTO filtro, Pageable pageable) {
 		
 		Specification<Promocao> spec = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
 		
@@ -59,6 +61,8 @@ public class PromocaoService {
 		
 		validarDataPromocao(promocao);
 		
+		promocao.setStatus(StatusPromocao.ATIVA);
+		
 		return promocaoRepository.save(promocao);
 	}
 	
@@ -77,7 +81,14 @@ public class PromocaoService {
 	public void alterarStatusPromocao(Long promocaoId, StatusPromocao status) {
 		Promocao promocao = findPromocaoById(promocaoId);
 		
+		validarDataPromocao(promocao);
+		
 		promocao.setStatus(status);
+	}
+	
+	@Transactional
+	public List<Promocao> findPromocoesVencidasAtivas() {
+		return this.promocaoRepository.findAll(comDataFimMenorOuIgualA(LocalDate.now()).and(comStatusIgualA(StatusPromocao.ATIVA)));
 	}
 	
 	

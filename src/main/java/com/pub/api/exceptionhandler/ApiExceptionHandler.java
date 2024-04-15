@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.mapping.PropertyReferenceException;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.fasterxml.jackson.databind.JsonMappingException.Reference;
@@ -71,6 +73,18 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 		
 		return handleExceptionInternal(ex, problema, headers, status, request);
 	}
+	
+	@Override
+	protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException ex, HttpHeaders headers,
+			HttpStatusCode status, WebRequest request) {
+		
+		if(ex instanceof MethodArgumentTypeMismatchException) {
+			return handleMethodArgumentTypeMismatch((MethodArgumentTypeMismatchException) ex, headers, status, request);
+		}
+		
+		return super.handleTypeMismatch(ex, headers, status, request);
+	}
+	
 
 	@ExceptionHandler(ObjetoJaCadastradoException.class)
 	public ResponseEntity<Object> handleObjetoJaCadastrado(ObjetoJaCadastradoException excecao, WebRequest request) {
@@ -117,7 +131,9 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 		
 		HttpStatus httpStatus = HttpStatus.UNPROCESSABLE_ENTITY;
 		
-		Problema problema = criarProblemaBuilder(httpStatus, TipoProblema.VIOLACAO_REGRA_NEGOCIO, ex.getMessage())
+		String detalhe = ex.getMensagemDesenvolvedor() != null ? ex.getMensagemDesenvolvedor() : ex.getMessage();
+		
+		Problema problema = criarProblemaBuilder(httpStatus, TipoProblema.VIOLACAO_REGRA_NEGOCIO, detalhe)
 				.mensagemUsuario(ex.getMessage())
 				.build();
 		
@@ -230,6 +246,21 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 				.build();
 		
 		return handleExceptionInternal(ex, problema, headers, httpStatus, webRequest);
+	}
+	
+	private ResponseEntity<Object> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex,
+			HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+		
+		TipoProblema tipoProblema = TipoProblema.PARAMETRO_INVALIDO;
+		
+		String detail = String.format("O parâmetro de URL '%s' recebeu o valor '%s', que é de um tipo inválido."
+				+ " Corrija e informe um valor compátivel com o tipo %s", ex.getName(), ex.getValue(),
+				ex.getRequiredType().getSimpleName());
+		
+		Problema problema = criarProblemaBuilder(status, tipoProblema, detail)
+				.mensagemUsuario(MSG_ERRO_GENERICA_USUARIO_FINAL).build();
+		
+		return handleExceptionInternal(ex, problema, headers, status, request);
 	}
 	
 	private Problema.ProblemaBuilder criarProblemaBuilder(HttpStatusCode status, TipoProblema tipoProblema, String detalhe) {

@@ -21,5 +21,7 @@ app:
      job-encerrar-eventos:
          cron: ${CRON_JOB_ENCERRAR_EVENTOS:0 * * * * ?}
      job-iniciar-eventos:
-         cron: ${CRON_JOB_INICIAR_EVENTOS:30 * * * * ?}
+         cron: ${CRON_JOB_INICIAR_EVENTOS:20 * * * * ?}
+     job-encerrar-promocoes:
+         cron: ${CRON_JOB_ENCERRAR_PROMOCOES:40 * * * * ?}
 

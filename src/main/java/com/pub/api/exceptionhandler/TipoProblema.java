@@ -9,6 +9,7 @@ public enum TipoProblema {
 	DADOS_INVALIDOS("/dados-invalidos", "Dados inválidos"),
 	MENSAGEM_INCOMPREENSIVEL("/mensagem-incompreensivel", "Mensagem incompreensível"),
 	RECURSO_NAO_ENCONTRADO("/recurso-nao-encontrado", "Recurso não encontrado"),
+	PARAMETRO_INVALIDO("/parametro-invalido", "Parâmetro inválido"),
 	VIOLACAO_REGRA_NEGOCIO("/violacao-regra-negocio", "Violação de regra de negócio");
 	
 	private String uri;

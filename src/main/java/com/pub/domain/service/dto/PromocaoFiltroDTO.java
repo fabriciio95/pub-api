@@ -11,7 +11,7 @@ import lombok.Setter;
 @Builder
 @Getter
 @Setter
-public class PromocaoFiltro {
+public class PromocaoFiltroDTO {
 
 	private LocalDate dataInicio;
 	

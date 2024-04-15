@@ -19,6 +19,10 @@ public class PromocaoSpecs {
 		return (root, query, criteriaBuilder) -> criteriaBuilder.lessThanOrEqualTo(root.get("dataFim"),  data.atTime(LocalTime.MAX));
 	}
 	
+	public static Specification<Promocao> comDataFimMenorQue(LocalDate data) {
+		return (root, query, criteriaBuilder) -> criteriaBuilder.lessThan(root.get("dataFim"),  data.atTime(LocalTime.MAX));
+	}
+	
 	public static Specification<Promocao> comIdIgualA(Long id) {
 		return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("id"), id);
 	}
