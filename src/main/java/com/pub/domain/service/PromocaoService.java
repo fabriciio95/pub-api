@@ -98,6 +98,11 @@ public class PromocaoService {
 				 .orElseThrow(() -> new EntidadeNaoEncontradaException(String.format("Promocão de código %d não encontrada", promocaoId)));
 	}
 	
+	@Transactional
+	public boolean existsPromocaoById(Long promocaoId) {
+		return promocaoRepository.existsById(promocaoId);
+	}
+	
 	
 	private void validarDataPromocao(Promocao promocao) {
 		if(promocao.getDataInicio().isAfter(promocao.getDataFim())) {
