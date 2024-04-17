@@ -159,7 +159,7 @@ public class RegraPromocaoService {
 	@Transactional
 	public RegraPromocao findRegraById(Long promocaoId, Long regraId) {
 		return regraPromocaoRepository.findByPromocaoIdAndId(promocaoId, regraId)
-				 .orElseThrow(() -> new EntidadeNaoEncontradaException(String.format("Regra de código %d não encontrada", regraId)));
+				 .orElseThrow(() -> new EntidadeNaoEncontradaException(String.format("Regra de código %d da promoção de código %d não encontrada", regraId, promocaoId)));
 	}
 	
 
