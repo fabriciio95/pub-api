@@ -1,0 +1,2 @@
+ALTER TABLE regra_promocao
+ALTER COLUMN meta TYPE NUMERIC USING meta::NUMERIC;

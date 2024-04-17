@@ -1,6 +1,14 @@
 package com.pub.domain.service;
 
+import static com.pub.infrastructure.repository.spec.RegraPromocaoSpecs.comIdIgualA;
+import static com.pub.infrastructure.repository.spec.RegraPromocaoSpecs.comMetaIgualA;
+import static com.pub.infrastructure.repository.spec.RegraPromocaoSpecs.comProdutoGratisIdIgualA;
+import static com.pub.infrastructure.repository.spec.RegraPromocaoSpecs.comStatusIgualA;
+import static com.pub.infrastructure.repository.spec.RegraPromocaoSpecs.comTipoRegraIgualA;
+import static com.pub.infrastructure.repository.spec.RegraPromocaoSpecs.comValorRegraIgualA;
+
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
@@ -10,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.pub.domain.exception.EntidadeNaoEncontradaException;
+import com.pub.domain.exception.ObjetoConflitanteException;
 import com.pub.domain.exception.ViolacaoRegraNegocioException;
 import com.pub.domain.model.Produto;
 import com.pub.domain.model.Promocao;
@@ -18,7 +27,6 @@ import com.pub.domain.model.enums.StatusPromocao;
 import com.pub.domain.model.enums.TipoRegraPromocao;
 import com.pub.domain.repository.RegraPromocaoRepository;
 import com.pub.domain.service.dto.RegraPromocaoFiltroDTO;
-import static com.pub.infrastructure.repository.spec.RegraPromocaoSpecs.*;
 
 import lombok.RequiredArgsConstructor;
 
@@ -66,6 +74,13 @@ public class RegraPromocaoService {
 	}
 	
 	@Transactional
+	public Page<Produto> getProdutosRegra(Long promocaoId, Long regraId, Pageable pageable) {
+		RegraPromocao regra = findRegraById(promocaoId, regraId);
+		
+		return regraPromocaoRepository.findProdutosByRegraPromocaoId(regra.getId(), pageable);
+	}
+	
+	@Transactional
 	public RegraPromocao cadastrar(RegraPromocao regra, Long promocaoId) {
 		Promocao promocao = promocaoService.findPromocaoById(promocaoId);
 		
@@ -80,15 +95,7 @@ public class RegraPromocaoService {
 	
 	@Transactional
 	public RegraPromocao atualizar(RegraPromocao regra, Long regraId, Long promocaoId) {
-		if(!promocaoService.existsPromocaoById(promocaoId)) {
-			throw new EntidadeNaoEncontradaException(String.format("Promocão de código %d não encontrada", promocaoId));
-		}
-		
-		RegraPromocao regraCadastrada = findRegraById(regraId);
-		
-		if(!regraCadastrada.getPromocao().getId().equals(promocaoId)) {
-			throw new EntidadeNaoEncontradaException(String.format("Regra de código %d da promoção de código %d não encontrada", regraId, promocaoId));
-		}
+		RegraPromocao regraCadastrada = findRegraById(promocaoId, regraId);
 		
 		validarRegra(regra);
 		
@@ -98,20 +105,60 @@ public class RegraPromocaoService {
 	}
 	
 	@Transactional
-	public void alterarStatus(StatusPromocao status, Long regraId) {
-		RegraPromocao regra = findRegraById(regraId);
+	public void alterarStatus(StatusPromocao status, Long promocaoId, Long regraId) {
+		RegraPromocao regra = findRegraById(promocaoId, regraId);
 		
 		regra.setStatus(status);
 	}
 	
 	@Transactional
-	public void excluir(Long regraId) {
-		regraPromocaoRepository.deleteById(regraId);
+	public void associarProdutos(Long promocaoId, Long regraId, List<Long> produtosId) {
+		RegraPromocao regra = findRegraById(promocaoId, regraId);
+		
+		produtosId.forEach(produtoId -> {
+			try {
+				
+				Produto produto = produtoService.findProdutoById(produtoId);
+				
+				regra.adicionarProduto(produto);
+				
+			} catch(EntidadeNaoEncontradaException ex) {
+				throw new ObjetoConflitanteException(String.format("Produto de código %d não cadastrado", produtoId), ex);
+			}
+		});
 	}
 	
 	@Transactional
-	public RegraPromocao findRegraById(Long regraId) {
-		return regraPromocaoRepository.findById(regraId)
+	public void desassociarProdutos(Long promocaoId, Long regraId, List<Long> produtosId) {
+		
+		RegraPromocao regra = findRegraById(promocaoId, regraId);
+		
+		produtosId.forEach(produtoId -> {
+			try {
+				
+				Produto produto = produtoService.findProdutoById(produtoId);
+				
+				if(!regra.getProdutos().contains(produto))
+					throw new ViolacaoRegraNegocioException(String.format("Produto de código %d não vinculado a regra de código %d", produtoId, regraId));
+				
+				regra.removerProduto(produto);
+				
+			} catch(EntidadeNaoEncontradaException ex) {
+				throw new ObjetoConflitanteException(String.format("Produto de código %d não cadastrado", produtoId), ex);
+			}
+		});
+	}
+	
+	@Transactional
+	public void excluir(Long promocaoId, Long regraId) {
+		RegraPromocao regra = findRegraById(promocaoId, regraId);
+		
+		regraPromocaoRepository.delete(regra);
+	}
+	
+	@Transactional
+	public RegraPromocao findRegraById(Long promocaoId, Long regraId) {
+		return regraPromocaoRepository.findByPromocaoIdAndId(promocaoId, regraId)
 				 .orElseThrow(() -> new EntidadeNaoEncontradaException(String.format("Regra de código %d não encontrada", regraId)));
 	}
 	
@@ -123,10 +170,12 @@ public class RegraPromocaoService {
 				
 				regra.setProdutoGratis(produto);
 			} catch(EntidadeNaoEncontradaException e) {
-				throw new ViolacaoRegraNegocioException(String.format("Produto de código %d não encontrado, favor vincular a regra produtos cadastrados", regra.getProdutoGratis().getId()));
+				throw new ViolacaoRegraNegocioException(String.format("Produto de código %d não encontrado, para cadastro de produto grátis favor vincular a regra produtos cadastrados", regra.getProdutoGratis().getId()));
 			}
 		} else if (TipoRegraPromocao.PRODUTO_GRATIS.equals(regra.getTipoRegra())){
-			throw new ViolacaoRegraNegocioException(String.format("Para regras do tipo %d deve ser informado o produto grátis", regra.getTipoRegra().getDescricao()));
+			throw new ViolacaoRegraNegocioException(String.format("Para regras do tipo %s deve ser informado o produto grátis", regra.getTipoRegra().getDescricao()));
+		} else if (!TipoRegraPromocao.PRODUTO_GRATIS.equals(regra.getTipoRegra())  && regra.getProdutoGratis() != null && regra.getProdutoGratis().getId() != null){
+			throw new ViolacaoRegraNegocioException(String.format("Para regras do tipo %s não pode ser informado o produto grátis", regra.getTipoRegra().getDescricao()));
 		}
 		
 		if(isValorNuloOuZero(regra.getMeta()) || isValorNuloOuZero(regra.getValorRegra())) {

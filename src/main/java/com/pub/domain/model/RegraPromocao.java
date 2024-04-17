@@ -62,4 +62,12 @@ public class RegraPromocao {
 	           joinColumns = @JoinColumn(name = "regra_id"),
 	           inverseJoinColumns = @JoinColumn(name = "produto_id"))
 	private Set<Produto> produtos = new HashSet<>();
+	
+	public void adicionarProduto(Produto produto) {
+		this.produtos.add(produto);
+	}
+	
+	public void removerProduto(Produto produto) {
+		this.produtos.remove(produto);
+	}
 }

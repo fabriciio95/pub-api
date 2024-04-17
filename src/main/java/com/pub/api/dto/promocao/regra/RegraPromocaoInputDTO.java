@@ -1,28 +1,29 @@
-package com.pub.domain.service.dto;
+package com.pub.api.dto.promocao.regra;
 
 import java.math.BigDecimal;
 
-import com.pub.domain.model.enums.StatusPromocao;
 import com.pub.domain.model.enums.TipoRegraPromocao;
 
-import lombok.Builder;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
-@Builder
 @Getter
 @Setter
-public class RegraPromocaoFiltroDTO {
+public class RegraPromocaoInputDTO {
 
-	private Long regraId;
-	
-	private StatusPromocao status;
-	
+	@NotNull
+	@DecimalMin("0.01")
 	private BigDecimal meta;
 	
+	@NotNull
+	@DecimalMin("0.01")
 	private BigDecimal valorRegra;
 	
+	@NotNull
 	private TipoRegraPromocao tipoRegra;
 	
 	private Long produtoGratisId;
+	
 }

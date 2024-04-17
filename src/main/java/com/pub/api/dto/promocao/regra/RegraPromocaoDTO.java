@@ -3,8 +3,6 @@ package com.pub.api.dto.promocao.regra;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
-import org.hibernate.annotations.CreationTimestamp;
-
 import com.pub.api.dto.produto.ProdutoDTO;
 import com.pub.domain.model.enums.StatusPromocao;
 import com.pub.domain.model.enums.TipoRegraPromocao;
@@ -28,6 +26,5 @@ public class RegraPromocaoDTO {
 	
 	private ProdutoDTO produtoGratis;
 	
-	@CreationTimestamp
 	private OffsetDateTime dataCadastro;
 }
