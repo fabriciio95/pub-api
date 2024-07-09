@@ -51,7 +51,7 @@ public class RegraPromocaoController {
 											RegraPromocaoFiltroDTO filtro,
 											Pageable pageable){
 		
-		Page<RegraPromocao> regras = regraPromocaoService.pesquisar(filtro, pageable);
+		Page<RegraPromocao> regras = regraPromocaoService.pesquisar(promocaoId, filtro, pageable);
 		
 		List<RegraPromocaoDTO> listaRegras = regraPromocaoAssembler.toListDto(regras.getContent());
 		

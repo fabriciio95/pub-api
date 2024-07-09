@@ -6,6 +6,7 @@ import static com.pub.infrastructure.repository.spec.RegraPromocaoSpecs.comProdu
 import static com.pub.infrastructure.repository.spec.RegraPromocaoSpecs.comStatusIgualA;
 import static com.pub.infrastructure.repository.spec.RegraPromocaoSpecs.comTipoRegraIgualA;
 import static com.pub.infrastructure.repository.spec.RegraPromocaoSpecs.comValorRegraIgualA;
+import static com.pub.infrastructure.repository.spec.RegraPromocaoSpecs.comPromocaoIdIgualA;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -42,9 +43,9 @@ public class RegraPromocaoService {
 	
 	
 	@Transactional
-	public Page<RegraPromocao> pesquisar(RegraPromocaoFiltroDTO filtro, Pageable pageable) {
+	public Page<RegraPromocao> pesquisar(Long promocaoId, RegraPromocaoFiltroDTO filtro, Pageable pageable) {
 		
-		Specification<RegraPromocao> spec = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
+		Specification<RegraPromocao> spec = comPromocaoIdIgualA(promocaoId);
 		
 		if(filtro.getMeta() != null) {
 			spec = spec.and(comMetaIgualA(filtro.getMeta()));
@@ -84,13 +85,16 @@ public class RegraPromocaoService {
 	public RegraPromocao cadastrar(RegraPromocao regra, Long promocaoId) {
 		Promocao promocao = promocaoService.findPromocaoById(promocaoId);
 		
+		if(StatusPromocao.INATIVA.equals(promocao.getStatus())) {
+			throw new ViolacaoRegraNegocioException(String.format("Promoção de código %d está inativa, portanto não pode ser cadastrado uma nova regra associada", promocao.getId()));
+		}
+		
 		regra.setPromocao(promocao);
 		regra.setStatus(StatusPromocao.ATIVA);
 		
 		validarRegra(regra);
 		
 		return regraPromocaoRepository.save(regra);
-		
 	}
 	
 	@Transactional
@@ -99,7 +103,7 @@ public class RegraPromocaoService {
 		
 		validarRegra(regra);
 		
-		BeanUtils.copyProperties(regra, regraCadastrada, "id", "dataCadastro", "dataAtualizacao", "status");
+		BeanUtils.copyProperties(regra, regraCadastrada, "id", "dataCadastro", "dataAtualizacao", "status", "promocao", "produtos");
 		
 		return regraCadastrada;
 	}

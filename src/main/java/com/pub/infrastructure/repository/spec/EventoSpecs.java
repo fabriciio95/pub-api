@@ -21,7 +21,7 @@ public class EventoSpecs {
 	}
 	
 	public static Specification<Evento> comDataInicioMaiorOuIgualA(LocalDate data) {
-		return (root, query, criteriaBuilder) -> criteriaBuilder.greaterThanOrEqualTo(root.get("dataHoraInicioEvento"), data.atStartOfDay().atOffset(ZoneOffset.UTC));
+		return (root, query, criteriaBuilder) -> criteriaBuilder.greaterThanOrEqualTo(root.get("dataHoraInicioEvento"), data.atStartOfDay());
 	}
 	
 	public static Specification<Evento> comDataInicioMenorOuIgualA(OffsetDateTime data) {
@@ -49,7 +49,7 @@ public class EventoSpecs {
 	}
 	
 	public static Specification<Evento> comDataFimMaiorOuIgualA(LocalDate data) {
-		return (root, query, criteriaBuilder) -> criteriaBuilder.greaterThanOrEqualTo(root.get("dataHoraFimEvento"), data.atStartOfDay().atOffset(ZoneOffset.UTC));
+		return (root, query, criteriaBuilder) -> criteriaBuilder.greaterThanOrEqualTo(root.get("dataHoraFimEvento"), data.atStartOfDay());
 	}
 	
 	public static Specification<Evento> comIdDiferenteDe(Long id) {

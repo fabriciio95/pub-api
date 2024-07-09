@@ -35,4 +35,8 @@ public class RegraPromocaoSpecs {
 	public static Specification<RegraPromocao> comProdutoGratisIdIgualA(Long produtoGratisId) {
 		return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("produtoGratis").get("id"), produtoGratisId);
 	}
+	
+	public static Specification<RegraPromocao> comPromocaoIdIgualA(Long promocaoId) {
+		return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("promocao").get("id"), promocaoId);
+	}
 }

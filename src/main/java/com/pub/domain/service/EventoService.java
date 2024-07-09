@@ -98,20 +98,23 @@ public class EventoService {
 		
 		validarDataEvento(eventoCadastrado);
 		
-		List<StatusEvento> statusPossiveisParaAtualizacao = eventoCadastrado.getStatus().getStatusPossiveisParaMudanca();
-		
-		if(!statusPossiveisParaAtualizacao.contains(evento.getStatus())) {
-			throw new ViolacaoRegraNegocioException(String.format("Evento de código %d não pode ser atualizado para o status %s, apenas para os status ( %s )",
-					eventoId, evento.getStatus(), statusPossiveisParaAtualizacao.stream()
-					.map(StatusEvento::name)
-					.collect(Collectors.joining(", "))));
-		}
+		validarMudancaStatus(eventoCadastrado, evento);
 		
 		eventoCadastrado.setStatus(evento.getStatus());
 		
-		Specification<Evento> spec = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
+		validarConflitoPeriodoEvento(evento, eventoId, eventoCadastrado);
 		
+		preencherDataAlteracaoStatus(eventoCadastrado);
+		
+		BeanUtils.copyProperties(evento, eventoCadastrado, "id", "dataCadastro", "dataAtualizacao", "dataHoraCancelamento", "dataHoraFinalizacao", "status");
+		
+		return eventoCadastrado;
+	}
+
+	private void validarConflitoPeriodoEvento(Evento evento, Long eventoId, Evento eventoCadastrado) {
 		if(eventoCadastrado.getStatus().equals(StatusEvento.ATIVO) || eventoCadastrado.getStatus().equals(StatusEvento.INICIADO)) {
+			Specification<Evento> spec = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
+			
 			spec = comDataInicioEFimValida(evento.getDataHoraInicioEvento(),  evento.getDataHoraFimEvento())
                     .and(comStatusAtivoOuIniciado())
 			        .and(comIdDiferenteDe(eventoId));
@@ -122,19 +125,34 @@ public class EventoService {
 				throw new ViolacaoRegraNegocioException("Já existem eventos cadastrados para o mesmo período");
 			}
 		}
-		
-		preencherDataAlteracaoStatus(eventoCadastrado);
-		
-		BeanUtils.copyProperties(evento, eventoCadastrado, "id", "dataCadastro", "dataAtualizacao", "status");
-		
-		return eventoCadastrado;
 	}
 	
+	private void validarMudancaStatus(Evento eventoAtual, Evento eventoNovo) {
+		List<StatusEvento> statusPossiveisParaAtualizacao = eventoAtual.getStatus().getStatusPossiveisParaMudanca();
+		
+		if(!statusPossiveisParaAtualizacao.contains(eventoNovo.getStatus())) {
+			throw new ViolacaoRegraNegocioException(String.format("Evento de código %d não pode ser atualizado para o status %s, apenas para os status ( %s )",
+					eventoAtual.getId(), eventoNovo.getStatus(), statusPossiveisParaAtualizacao.stream()
+					.map(StatusEvento::name)
+					.collect(Collectors.joining(", "))));
+		}
+		
+		if((eventoNovo.getStatus().equals(StatusEvento.INICIADO) || eventoNovo.getStatus().equals(StatusEvento.FINALIZADO)) && eventoNovo.getDataHoraInicioEvento().isAfter(OffsetDateTime.now())) {
+			throw new ViolacaoRegraNegocioException(String.format("Evento de código %d não pode ser alterado para o status %s pois não está na data de início", eventoAtual.getId(), eventoNovo.getStatus()));
+		}
+	}
+
 	private void preencherDataAlteracaoStatus(Evento eventoCadastrado) {
-		 if(eventoCadastrado.getStatus().equals(StatusEvento.CANCELADO) && eventoCadastrado.getDataHoraCancelamento() == null) {
+		if(eventoCadastrado.getStatus().equals(StatusEvento.CANCELADO) && eventoCadastrado.getDataHoraCancelamento() == null) {
 			eventoCadastrado.setDataHoraCancelamento(OffsetDateTime.now());
-		} else if(eventoCadastrado.getStatus().equals(StatusEvento.FINALIZADO) && eventoCadastrado.getDataHoraFinalizacao() == null) {
+		} else if (!eventoCadastrado.getStatus().equals(StatusEvento.CANCELADO) && eventoCadastrado.getDataHoraCancelamento() != null) {
+			eventoCadastrado.setDataHoraCancelamento(null);
+		} 
+		
+		if(eventoCadastrado.getStatus().equals(StatusEvento.FINALIZADO) && eventoCadastrado.getDataHoraFinalizacao() == null) {
 			eventoCadastrado.setDataHoraFinalizacao(OffsetDateTime.now());
+		} else if(!eventoCadastrado.getStatus().equals(StatusEvento.FINALIZADO) && eventoCadastrado.getDataHoraFinalizacao() != null) {
+			eventoCadastrado.setDataHoraFinalizacao(null);
 		}
 	}
 
