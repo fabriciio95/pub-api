@@ -4,7 +4,6 @@ package com.pub.infrastructure.repository.spec;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 
 import org.springframework.data.jpa.domain.Specification;
 

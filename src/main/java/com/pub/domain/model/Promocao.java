@@ -45,6 +45,6 @@ public class Promocao {
 	@UpdateTimestamp
 	private OffsetDateTime dataAtualizacao;
 	
-	@OneToMany(mappedBy = "id")
+	@OneToMany(mappedBy = "promocao")
 	private Set<RegraPromocao> regras = new HashSet<>();
 }
