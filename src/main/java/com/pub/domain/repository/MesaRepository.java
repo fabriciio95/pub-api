@@ -9,4 +9,7 @@ import com.pub.domain.model.Mesa;
 @Repository
 public interface MesaRepository extends JpaRepository<Mesa, Long>, JpaSpecificationExecutor<Mesa> {
 
+	boolean existsByNumero(Integer numero);
+	
+	boolean existsByNumeroAndIdNot(Integer numero, Long id);
 }
