@@ -9,4 +9,11 @@ import com.pub.domain.model.Funcionario;
 @Repository
 public interface FuncionarioRepository extends JpaRepository<Funcionario, Long>, JpaSpecificationExecutor<Funcionario> {
 
+	boolean existsByTelefone(String cpf);
+	
+	boolean existsByTelefoneAndIdNot(String cpf, Long id);
+	
+	boolean existsByCpf(String cpf);
+	
+	boolean existsByCpfAndIdNot(String cpf, Long id);
 }
